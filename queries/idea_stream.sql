@@ -1,0 +1,1 @@
+create table idea_stream (id int primary key, incoming_idea varchar(500), created_time date, updated_time date)
