@@ -10,6 +10,7 @@ import 'globals.dart';
 import 'home.dart';
 
 void main() {
+  //git check
   runApp(const ErekDash());
 }
 
