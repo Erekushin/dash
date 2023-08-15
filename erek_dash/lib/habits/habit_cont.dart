@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../globals.dart';
-import '../helpers/work_with_database.dart';
 import '../widgets/snacks.dart';
-import '../configuration/conf_cont.dart';
 
 class CurrentHabit {
   CurrentHabit(this.actualData, this.isDone);
@@ -13,21 +11,37 @@ class CurrentHabit {
 }
 
 class HabitCont extends GetxController {
-  final confCont = Get.find<ConfigurationCont>();
+  DateTime now1 = DateTime.now();
+
+  HabitCont() {
+    DateTime now = DateTime(now1.year, now1.month, now1.day, now1.hour, 0, 0);
+    for (int i = 0; i < GlobalStatics.habitType.length; i++) {
+      var item = GlobalStatics.habitType[i];
+      if (now.hour >= item['upperthat'] && now.hour <= item['downerthat']) {
+        currentHabitTypeId = item['id'];
+        GlobalValues.homeScreenType = HomeScreenType.packagedHabits;
+      }
+    }
+  }
   String tableName = 'habits';
 
-  WorkLocal workLocalCont = WorkLocal();
   RxList habitList = [].obs;
   RxList<CurrentHabit> packagedList = <CurrentHabit>[].obs;
   Future<dynamic> getAllHabits() async {
-    habitList.value = await workLocalCont.fetchData(tableName);
-    packageHabits();
+    try {
+      final db = await Erekdatabase.database;
+      habitList.value = await db.query(tableName);
+      packageHabits();
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
   }
 
+  int currentHabitTypeId = 0;
   packageHabits() async {
     packagedList.clear();
     for (int i = 0; i < habitList.length; i++) {
-      if (habitList[i]['habit_type'] == confCont.habitTypeId.value) {
+      if (habitList[i]['habit_type'] == currentHabitTypeId) {
         bool thereNot = await checkIfThereSameProgress(habitList[i]);
         CurrentHabit newItem;
         newItem = CurrentHabit(habitList[i], thereNot);
@@ -39,10 +53,11 @@ class HabitCont extends GetxController {
   TextEditingController habitTxtCnt = TextEditingController();
   Map<String, dynamic> selectedValue = GlobalStatics.habitType[0];
 
-  void insertHabit() {
+  Future insertHabit() async {
     if (habitTxtCnt.text.isNotEmpty) {
       try {
-        workLocalCont.insertData(tableName,
+        final db = await Erekdatabase.database;
+        db.insert(tableName,
             {'habit': habitTxtCnt.text, "habit_type": selectedValue['id']});
         Snacks.savedSnack();
         habitTxtCnt.clear();
@@ -54,21 +69,31 @@ class HabitCont extends GetxController {
   }
 
   Future updateHabit(int id) async {
-    habitTxtCnt.text = habitTxtCnt.text.trimRight();
-    bool result = await workLocalCont.updateData(tableName, id,
-        {'habit': habitTxtCnt.text, "habit_type": selectedValue['id']});
-    result ? getAllHabits() : null;
-    habitTxtCnt.clear();
+    try {
+      habitTxtCnt.text = habitTxtCnt.text.trimRight();
+      final db = await Erekdatabase.database;
+      db.update(
+        tableName,
+        {'habit': habitTxtCnt.text, "habit_type": selectedValue['id']},
+        where: 'id = $id',
+      );
+
+      getAllHabits();
+      habitTxtCnt.clear();
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
   }
 
-  void deleteHabit(int id) {
+  void deleteHabit(int id) async {
     try {
-      workLocalCont.deleteData(tableName, 'id', id);
+      final db = await Erekdatabase.database;
+      db.delete(tableName, where: 'id = $id');
       getAllHabits();
       Get.back();
       habitTxtCnt.clear();
 
-      workLocalCont.deleteData(progressTableName, 'habit_id', id);
+      db.delete(progressTableName, where: 'habit_id = $id');
 
       Snacks.deleteSnack();
     } catch (e) {
@@ -80,42 +105,67 @@ class HabitCont extends GetxController {
 //habit journal ruu hiih crud vildel
   String progressTableName = 'habits_journal';
   RxList progressList = [].obs;
-  Future<dynamic> getAllProgress(int HabitId) async {
-    progressList.value = await workLocalCont.fetchFilteredData(
-        progressTableName, 'habit_id', HabitId);
-    print('progress list ${progressList}');
+  Future getAllProgress(int habitId) async {
+    try {
+      final db = await Erekdatabase.database;
+      progressList.value = await db.query(
+        progressTableName,
+        where: 'habit_id = $habitId',
+      );
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  RxList dayProgress = [].obs;
+  Future dayHabitProgress() async {
+    try {
+      final db = await Erekdatabase.database;
+      dayProgress.value = await db.query(progressTableName,
+          where: 'day_date = ?', whereArgs: [GlobalValues.nowStrShort]);
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
   }
 
   List ifThere = [];
   Future<bool> checkIfThereSameProgress(dynamic habit) async {
-    ifThere = await workLocalCont.fetchTwoFilteredData(
-        progressTableName,
-        'habit_id',
-        habit['id'],
-        'day_date',
-        DateTime.now().toString().substring(0, 10));
+    try {
+      final db = await Erekdatabase.database;
+      ifThere = await db.query(progressTableName,
+          where: 'habit_id = ? AND day_date = ?',
+          whereArgs: [habit['id'], GlobalValues.nowStrShort]);
 
-    return ifThere.isEmpty ? true : false;
+      return ifThere.isEmpty ? true : false;
+    } catch (e) {
+      Snacks.errorSnack(e);
+      return false;
+    }
   }
 
   TextEditingController stardedtimeofHabit = TextEditingController();
   TextEditingController finfishedtimeofHabit = TextEditingController();
-  Future insertTaskProgress(
+  Future insertHabitProgress(
       dynamic habit, String starting, String finished, String success) async {
     await checkIfThereSameProgress(habit);
     if (ifThere.isEmpty) {
-      bool result = await workLocalCont.insertData(progressTableName, {
-        'habit': habit['habit'],
-        "day_date": DateTime.now().toString().substring(0, 10),
-        "starting_time": starting,
-        "finished_time": finished,
-        "success_count": success,
-        "habit_id": habit['id']
-      });
-      stardedtimeofHabit.clear();
-      finfishedtimeofHabit.clear();
-      successPointofHabit.clear();
-      getAllHabits();
+      try {
+        final db = await Erekdatabase.database;
+        db.insert(progressTableName, {
+          'habit': habit['habit'],
+          "day_date": GlobalValues.nowStrShort,
+          "starting_time": starting,
+          "finished_time": finished,
+          "success_count": success,
+          "habit_id": habit['id']
+        });
+        stardedtimeofHabit.clear();
+        finfishedtimeofHabit.clear();
+        successPointofHabit.clear();
+        getAllHabits();
+      } catch (e) {
+        Snacks.errorSnack(e);
+      }
     } else {
       Snacks.warningSnack('Утгийг аль хэдийн нэмсэн байна');
     }
@@ -125,20 +175,29 @@ class HabitCont extends GetxController {
   TextEditingController finfishedtimeofHabitedit = TextEditingController();
   TextEditingController successPointofHabit = TextEditingController();
   Future updateTaskProgress(int id, int habitId) async {
-    bool result = await workLocalCont.updateData(progressTableName, id, {
-      'starting_time': stardedtimeofHabit.text,
-      "finished_time": finfishedtimeofHabit.text,
-      "success_count": successPointofHabit.text
-    });
-    result ? getAllProgress(habitId) : null;
-    stardedtimeofHabit.clear();
-    finfishedtimeofHabit.clear();
-    successPointofHabit.clear();
+    try {
+      final db = await Erekdatabase.database;
+      db.update(
+          progressTableName,
+          {
+            'starting_time': stardedtimeofHabit.text,
+            "finished_time": finfishedtimeofHabit.text,
+            "success_count": successPointofHabit.text
+          },
+          where: 'id = $id');
+      getAllProgress(habitId);
+      stardedtimeofHabit.clear();
+      finfishedtimeofHabit.clear();
+      successPointofHabit.clear();
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
   }
 
-  void deleteTaskProgress(int id, int habitId) {
+  void deleteTaskProgress(int id, int habitId) async {
     try {
-      workLocalCont.deleteData(progressTableName, 'id', id);
+      final db = await Erekdatabase.database;
+      db.delete(progressTableName, where: 'id = $id');
       getAllProgress(habitId);
       getAllHabits();
       Snacks.deleteSnack();

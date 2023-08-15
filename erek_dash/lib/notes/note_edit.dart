@@ -59,9 +59,7 @@ class NoteEdit extends StatelessWidget {
                               ),
                               margin: const EdgeInsets.all(5),
                               child: InkWell(
-                                onTap: () {
-                                  print('fdddffdfd');
-                                },
+                                onTap: () {},
                                 child: Center(
                                   child: Row(
                                       mainAxisAlignment:

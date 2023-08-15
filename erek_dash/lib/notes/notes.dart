@@ -86,11 +86,21 @@ class _NotesState extends State<Notes> with TickerProviderStateMixin {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                Text(item['created_time']
-                                                    .toString()
-                                                    .substring(0, 10)),
-                                                Text(
-                                                  item['title'],
+                                                Expanded(
+                                                  flex: 1,
+                                                  child: Text(
+                                                      item['created_time']
+                                                          .toString()
+                                                          .substring(0, 10)),
+                                                ),
+                                                Expanded(
+                                                  flex: 3,
+                                                  child: Text(
+                                                    item['title'],
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
                                                 ),
                                               ],
                                             ),
@@ -105,11 +115,19 @@ class _NotesState extends State<Notes> with TickerProviderStateMixin {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text(item['created_time']
-                                              .toString()
-                                              .substring(0, 10)),
-                                          Text(
-                                            item['title'],
+                                          Expanded(
+                                            flex: 1,
+                                            child: Text(item['created_time']
+                                                .toString()
+                                                .substring(0, 10)),
+                                          ),
+                                          Expanded(
+                                            flex: 3,
+                                            child: Text(
+                                              item['title'],
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
                                           )
                                         ]),
                                   ),

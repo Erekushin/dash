@@ -31,10 +31,17 @@ class Snacks {
   }
 
   static errorSnack(Object error) {
-    Get.snackbar('😇', error.toString(),
-        colorText: Colors.white,
-        backgroundColor: const Color.fromARGB(255, 255, 41, 41),
-        duration: const Duration(seconds: 1));
+    Get.snackbar('😞', '',
+        colorText: Colors.black,
+        messageText: Text(
+          error.toString(),
+          style:
+              const TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
+        ),
+        shouldIconPulse: true,
+        icon: const Icon(Icons.warning),
+        backgroundColor: const Color.fromARGB(255, 249, 153, 153),
+        duration: const Duration(seconds: 5));
   }
 
   static warningSnack(String msj) {

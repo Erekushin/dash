@@ -5,21 +5,16 @@ import 'package:get/get.dart';
 import 'task_cont.dart';
 import '../helpers/time.dart';
 
-class TaskList extends StatefulWidget {
-  const TaskList({super.key});
+class BoxTask extends StatefulWidget {
+  const BoxTask({super.key});
 
   @override
-  State<TaskList> createState() => _TaskListState();
+  State<BoxTask> createState() => _BoxTaskState();
 }
 
-class _TaskListState extends State<TaskList> {
+class _BoxTaskState extends State<BoxTask> {
   TimeHelper timeHelper = TimeHelper();
   final cont = Get.find<TaskCont>();
-  @override
-  void initState() {
-    cont.getAll();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +22,10 @@ class _TaskListState extends State<TaskList> {
       builder: (littleCont) {
         return ListView.builder(
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: littleCont.taskListBody.value.taskList.length,
+            itemCount: littleCont.boxTasks.value.taskList.length,
             shrinkWrap: true,
             itemBuilder: (c, index) {
-              var item = littleCont.taskListBody.value.taskList[index];
+              var item = littleCont.boxTasks.value.taskList[index];
               return InkWell(
                 onTap: () {
                   littleCont.editCnt.text = item.txt!;
@@ -43,10 +38,9 @@ class _TaskListState extends State<TaskList> {
                   littleCont.editpinnedTime.text = item.pinnedTime ??
                       item.pinnedTime.toString().substring(11, 16);
                   littleCont.editimportancy.text = item.importancy.toString();
-
                   Get.to(() => TaskEdit(
                         item: item,
-                        selectedLabelid: item.label ?? 0,
+                        selectedLabelid: item.label!,
                         selectedLabelname: item.labelname ?? '',
                       ));
                 },

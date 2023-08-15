@@ -1,25 +1,29 @@
+import 'package:erek_dash/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../helpers/work_with_database.dart';
 import '../widgets/snacks.dart';
 
 class IdeaStreamCont extends GetxController {
   String tableName = 'idea_stream';
-  WorkLocal workLocalCont = WorkLocal();
   RxList ideaList = [].obs;
   Future<dynamic> getAllNewIdeas() async {
-    ideaList.value = await workLocalCont.fetchData(tableName);
+    try {
+      final db = await Erekdatabase.database;
+      ideaList.value = await db.query(tableName);
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
   }
 
   TextEditingController ideaTxtCnt = TextEditingController();
   TextEditingController ideaEditorCont = TextEditingController();
   String firstValue = '';
 
-  void insertIdea() {
+  Future insertIdea() async {
     if (ideaTxtCnt.text.isNotEmpty) {
       try {
-        workLocalCont.insertData(tableName, {'incoming_idea': ideaTxtCnt.text});
+        final db = await Erekdatabase.database;
+        db.insert(tableName, {'incoming_idea': ideaTxtCnt.text});
         Snacks.savedSnack();
         ideaTxtCnt.clear();
         getAllNewIdeas();
@@ -29,20 +33,31 @@ class IdeaStreamCont extends GetxController {
     }
   }
 
-  void updateNewIdea(int id) {
+  Future updateNewIdea(int id) async {
     print(ideaEditorCont.text.length);
     ideaEditorCont.text = ideaEditorCont.text.trimRight();
     print(ideaEditorCont.text.length);
     if (firstValue != ideaEditorCont.text) {
-      workLocalCont
-          .updateData(tableName, id, {'incoming_idea': ideaEditorCont.text});
-      getAllNewIdeas();
+      try {
+        final db = await Erekdatabase.database;
+        db.update(tableName, {'incoming_idea': ideaEditorCont.text},
+            where: 'id = $id');
+
+        getAllNewIdeas();
+      } catch (e) {
+        Snacks.errorSnack(e);
+      }
     }
   }
 
-  void deleteIdea(int id) {
+  Future deleteIdea(int id) async {
     try {
-      workLocalCont.deleteData(tableName, 'id', id);
+      final db = await Erekdatabase.database;
+      db.delete(
+        tableName,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
       getAllNewIdeas();
       Get.back();
       Snacks.deleteSnack();

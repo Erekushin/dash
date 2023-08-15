@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import '../notes/note_cont.dart';
 import '../globals.dart';
 import '../notes/note_gate.dart';
+import '../tasks/task_cont.dart';
+import '../tasks/task_gate.dart';
 import 'idea_stream_cont.dart';
 
 class InfoEdit extends StatelessWidget {
@@ -11,6 +13,7 @@ class InfoEdit extends StatelessWidget {
   final int id;
   final cont = Get.find<IdeaStreamCont>();
   final noteCont = Get.find<NoteCont>();
+  final taskCont = Get.find<TaskCont>();
   RxString mainFunctionalityType = 'incoming'.obs;
 
   @override
@@ -82,14 +85,19 @@ class InfoEdit extends StatelessWidget {
                                     ],
                                     onChanged: (value) {
                                       mainFunctionalityType.value = value!;
+                                      GlobalValues.movingIncomingIdeaId = id;
                                       switch (value) {
                                         case 'note':
                                           noteCont.notetxt.text =
                                               cont.ideaEditorCont.text;
-                                          GlobalValues.movingIncomingIdeaId =
-                                              id;
-
                                           Get.off(() => NoteGate(
+                                                incomingIsMoving: true,
+                                              ));
+                                          break;
+                                        case 'task':
+                                          taskCont.txtCnt.text =
+                                              cont.ideaEditorCont.text;
+                                          Get.off(() => TaskGate(
                                                 incomingIsMoving: true,
                                               ));
                                           break;

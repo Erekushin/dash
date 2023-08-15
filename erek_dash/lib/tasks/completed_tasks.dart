@@ -27,10 +27,10 @@ class _CompletedTasksState extends State<CompletedTasks> {
     return Scaffold(
       backgroundColor: MyColors.mainColor,
       appBar: AppBar(
-        title: Text('what I have done'),
+        title: const Text('what I have done'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(10),
+        padding: const EdgeInsets.all(10),
         child: GetX<TaskCont>(builder: (littleCont) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -50,13 +50,21 @@ class _CompletedTasksState extends State<CompletedTasks> {
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                item['task'],
-                                style: const TextStyle(color: Colors.white),
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  item['task'],
+                                  style: const TextStyle(color: Colors.white),
+                                ),
                               ),
-                              Text(
-                                item['finished_time'],
-                                style: const TextStyle(color: Colors.white),
+                              Expanded(
+                                flex: 1,
+                                child: Text(
+                                  item['finished_time']
+                                      .toString()
+                                      .substring(0, 10),
+                                  style: const TextStyle(color: Colors.white),
+                                ),
                               ),
                             ]),
                       ),

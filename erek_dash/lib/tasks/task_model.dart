@@ -5,7 +5,7 @@ class TaskListBody {
   TaskListBody.fromJson(List<dynamic> json) {
     taskList = <Task>[];
     for (var item in json) {
-      taskList!.add(Task.fromjson(item));
+      taskList.add(Task.fromjson(item));
     }
   }
 }
@@ -15,10 +15,12 @@ class Task {
   String? txt;
   int? active;
   int? doneit;
-  int? timeValue;
+  double? timeValue;
   int? importancy;
   String? startingTime;
   String? pinnedTime;
+  int? label;
+  String? labelname;
 
   int? spendingTime;
   int? remaininghours;
@@ -33,5 +35,7 @@ class Task {
     startingTime = json['starting_time'];
     pinnedTime = json['pinned_time'];
     spendingTime = json['spending_time'];
+    label = json['label'];
+    labelname = json['labelname'];
   }
 }

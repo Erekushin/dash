@@ -45,7 +45,11 @@ class TimeHelper {
     Duration difference = dateTime2.difference(dateTime1);
 
     int hoursDifference = difference.inHours;
-
+    if (hoursDifference < 0) {
+      print('Spending time is not valid');
+    } else if (hoursDifference == 0) {
+      hoursDifference = 1;
+    }
     return hoursDifference;
   }
 }

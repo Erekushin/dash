@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../configuration/conf_cont.dart';
 import 'habit_cont.dart';
-import '../globals.dart';
 import '../helpers/time.dart';
 import '../widgets/widget_tools.dart';
 
@@ -16,59 +14,48 @@ class PackagedHabits extends StatefulWidget {
 
 class _PackagedHabitsState extends State<PackagedHabits> {
   final cont = Get.find<HabitCont>();
-  final confCont = Get.find<ConfigurationCont>();
   TimeHelper timeHelper = TimeHelper();
-  @override
-  void initState() {
-    cont.packageHabits();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: MyColors.mainColor,
-      body: Padding(
-          padding: const EdgeInsets.all(10),
-          child: GetX<HabitCont>(
-            builder: (littleCont) {
-              return ListView.builder(
-                  itemCount: littleCont.packagedList.length,
-                  itemBuilder: (c, i) {
-                    return littleCont.packagedList[i].isDone
-                        ? InkWell(
-                            onTap: () {
-                              habitGate(context, littleCont.packagedList[i]);
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border:
-                                      Border.all(color: Colors.black, width: 3),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(10))),
-                              padding: const EdgeInsets.all(20),
-                              margin: const EdgeInsets.all(10),
-                              child: Text(littleCont
-                                  .packagedList[i].actualData['habit']),
-                            ))
-                        : Container(
-                            decoration: BoxDecoration(
-                                color: Colors.greenAccent,
-                                border:
-                                    Border.all(color: Colors.green, width: 3),
-                                borderRadius: const BorderRadius.all(
-                                    Radius.circular(10))),
-                            padding: const EdgeInsets.all(20),
-                            margin: const EdgeInsets.all(10),
-                            child: const Icon(
-                              Icons.check,
-                              color: Colors.white,
-                            ),
-                          );
-                  });
-            },
-          )),
+    return GetX<HabitCont>(
+      builder: (littleCont) {
+        return ListView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: littleCont.packagedList.length,
+            itemBuilder: (c, i) {
+              return littleCont.packagedList[i].isDone
+                  ? InkWell(
+                      onTap: () {
+                        habitGate(context, littleCont.packagedList[i]);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: Colors.black, width: 3),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(10))),
+                        padding: const EdgeInsets.all(20),
+                        margin: const EdgeInsets.all(10),
+                        child: Text(
+                            littleCont.packagedList[i].actualData['habit']),
+                      ))
+                  : Container(
+                      decoration: BoxDecoration(
+                          color: Colors.greenAccent,
+                          border: Border.all(color: Colors.green, width: 3),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(10))),
+                      padding: const EdgeInsets.all(20),
+                      margin: const EdgeInsets.all(10),
+                      child: const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                      ),
+                    );
+            });
+      },
     );
   }
 
@@ -87,7 +74,7 @@ class _PackagedHabitsState extends State<PackagedHabits> {
                   if (cont.stardedtimeofHabit.text.isNotEmpty &&
                       cont.finfishedtimeofHabit.text.isNotEmpty &&
                       cont.successPointofHabit.text.isNotEmpty) {
-                    cont.insertTaskProgress(
+                    cont.insertHabitProgress(
                         item.actualData,
                         cont.stardedtimeofHabit.text,
                         cont.finfishedtimeofHabit.text,

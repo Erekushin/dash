@@ -3,16 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../boxes/boxcont.dart';
 import 'task_cont.dart';
 import '../helpers/time.dart';
-import '../models/task_model.dart';
+import 'task_model.dart';
 import '../widgets/buttons.dart';
 import '../widgets/widget_tools.dart';
 
-class TaskEdit extends StatelessWidget {
-  TaskEdit({super.key, required this.item});
-  final cont = Get.find<TaskCont>();
+class TaskEdit extends StatefulWidget {
+  TaskEdit(
+      {super.key,
+      required this.item,
+      required this.selectedLabelid,
+      required this.selectedLabelname});
   final Task item;
+  String selectedLabelname;
+  int selectedLabelid;
+  @override
+  State<TaskEdit> createState() => _TaskEditState();
+}
+
+class _TaskEditState extends State<TaskEdit> {
+  final cont = Get.find<TaskCont>();
+  final boxCont = Get.find<BoxCont>();
 
   TimeHelper timeHelper = TimeHelper();
 
@@ -136,25 +149,94 @@ class TaskEdit extends StatelessWidget {
                         }),
                       ],
                     ),
-                    taskProperty(
-                        'importancy',
-                        TextField(
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                          keyboardType: TextInputType.number,
-                          onTap: () {},
-                          textAlign: TextAlign.center,
-                          controller: cont.editimportancy,
-                        ),
-                        () {}),
+                    Row(
+                      children: [
+                        taskProperty(
+                            'importancy',
+                            TextField(
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly
+                              ],
+                              keyboardType: TextInputType.number,
+                              onTap: () {},
+                              textAlign: TextAlign.center,
+                              controller: cont.editimportancy,
+                            ),
+                            () {}),
+                        taskProperty(
+                            'label',
+                            Padding(
+                                padding: const EdgeInsets.only(left: 5),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 10),
+                                  child: InkWell(
+                                      onTap: () {
+                                        // builtInDropDown(context);
+                                        Get.defaultDialog(
+                                            title: '',
+                                            content: SizedBox(
+                                              width: 200,
+                                              height: 200,
+                                              child: ListView.builder(
+                                                  shrinkWrap: true,
+                                                  itemCount:
+                                                      boxCont.boxList.length,
+                                                  itemBuilder: (c, i) {
+                                                    return InkWell(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          widget.selectedLabelname =
+                                                              boxCont.boxList[i]
+                                                                  ['boxname'];
+                                                        });
+                                                        widget.selectedLabelid =
+                                                            boxCont.boxList[i]
+                                                                ['id'];
+                                                        Get.back();
+                                                      },
+                                                      child: Container(
+                                                          alignment:
+                                                              Alignment.center,
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(5),
+                                                          margin:
+                                                              const EdgeInsets
+                                                                  .all(5),
+                                                          decoration: const BoxDecoration(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .all(Radius
+                                                                          .circular(
+                                                                              5)),
+                                                              color:
+                                                                  Colors.black),
+                                                          child: Text(
+                                                            boxCont.boxList[i]
+                                                                ['boxname'],
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .white),
+                                                          )),
+                                                    );
+                                                  }),
+                                            ));
+                                      },
+                                      child: Center(
+                                          child:
+                                              Text(widget.selectedLabelname))),
+                                )),
+                            () {})
+                      ],
+                    ),
                     const SizedBox(
                       height: 20,
                     ),
                     Row(
                       children: [
                         const Text('Duration  '),
-                        Text(item.spendingTime.toString()),
+                        Text(widget.item.spendingTime.toString()),
                         const Text('  hours')
                       ],
                     ),
@@ -164,7 +246,7 @@ class TaskEdit extends StatelessWidget {
                     Row(
                       children: [
                         const Text('Remaining  '),
-                        Text(item.remaininghours.toString()),
+                        Text(widget.item.remaininghours.toString()),
                         const Text('  hours'),
                       ],
                     ),
@@ -173,30 +255,42 @@ class TaskEdit extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         standartBtn('save new values', () {
-                          int speningHours = timeHelper.calculateHoursDifference(
-                              '${cont.editstartingDate.text} ${cont.editstartingTime.text}:00.000',
-                              '${cont.editpinnedDate.text} ${cont.editpinnedTime.text}:00.000');
-                          cont.updateTask(item.id!, {
+                          int speningHoursedit = 1;
+                          String fullstartingTimeedit = '';
+                          String fullpinnedTimeedit = '';
+                          print('object1');
+                          if (cont.editstartingDate.text.isNotEmpty &&
+                              cont.editpinnedDate.text.isNotEmpty) {
+                            speningHoursedit = timeHelper.calculateHoursDifference(
+                                '${cont.editstartingDate.text} ${cont.editstartingTime.text}:00.000',
+                                '${cont.editpinnedDate.text} ${cont.editpinnedTime.text}:00.000');
+
+                            fullstartingTimeedit =
+                                '${cont.editstartingDate.text} ${cont.editstartingTime.text}:00.000';
+                            fullpinnedTimeedit =
+                                '${cont.editpinnedDate.text} ${cont.editpinnedTime.text}:00.000';
+                          }
+                          cont.updateTask(widget.item.id!, {
                             'task': cont.editCnt.text,
                             'updated_time': GlobalValues.nowStr,
-                            'starting_time':
-                                '${cont.editstartingDate.text} ${cont.editstartingTime.text}:00.000',
-                            'pinned_time':
-                                '${cont.editpinnedDate.text} ${cont.editpinnedTime.text}:00.000',
+                            'starting_time': fullstartingTimeedit,
+                            'pinned_time': fullpinnedTimeedit,
                             'importancy': cont.editimportancy.text,
-                            'spending_time': speningHours,
+                            'spending_time': speningHoursedit,
+                            'label': widget.selectedLabelid,
+                            'labelname': widget.selectedLabelname
                           });
                         }),
                         const SizedBox(width: 10),
                         standartBtn('Nailed It', () {
-                          cont.updateTask(item.id!, {
+                          cont.updateTask(widget.item.id!, {
                             'done_it': 1,
-                            'finished_time': GlobalValues.nowStr
+                            'finished_time': GlobalValues.nowStrShort
                           });
                         }),
                         IconButton(
                             onPressed: () {
-                              cont.deleteTask(item.id!);
+                              cont.deleteTask(widget.item.id!);
                               Get.back();
                             },
                             icon: const Icon(

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,6 +22,17 @@ class NoteCont extends GetxController {
     }
   }
 
+  RxList today = [].obs;
+  Future getToday() async {
+    try {
+      final db = await Erekdatabase.database;
+      today.value = await db.query(tableName,
+          where: 'created_time = ?', whereArgs: [GlobalValues.nowStrShort]);
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
   TextEditingController notetxt = TextEditingController();
   TextEditingController noteTitle = TextEditingController();
   Future insertNote(bool movingIn) async {
@@ -33,7 +42,7 @@ class NoteCont extends GetxController {
         db.insert(tableName, {
           'note': notetxt.text,
           'title': noteTitle.text,
-          'created_time': GlobalValues.nowStr
+          'created_time': GlobalValues.nowStrShort
         });
         Snacks.savedSnack();
         notetxt.clear();
