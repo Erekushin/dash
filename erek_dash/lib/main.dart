@@ -1,5 +1,6 @@
 import 'package:erek_dash/tasks/task_cont.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'boxes/boxcont.dart';
@@ -13,6 +14,11 @@ import 'globals.dart';
 import 'home.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   runApp(const ErekDash());
 }
 

@@ -22,12 +22,13 @@ class NoteCont extends GetxController {
     }
   }
 
-  RxList today = [].obs;
-  Future getToday() async {
+  RxList noteoftheday = [].obs;
+  Future getToday(String theday) async {
     try {
       final db = await Erekdatabase.database;
-      today.value = await db.query(tableName,
-          where: 'created_time = ?', whereArgs: [GlobalValues.nowStrShort]);
+
+      noteoftheday.value = await db
+          .query(tableName, where: 'created_time = ?', whereArgs: [theday]);
     } catch (e) {
       Snacks.errorSnack(e);
     }

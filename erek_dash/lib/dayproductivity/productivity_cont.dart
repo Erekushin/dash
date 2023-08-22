@@ -75,11 +75,11 @@ class ProductivityCont extends GetxController {
   }
 
   RxList dayProductivity = [].obs;
-  Future getCurrentDay() async {
+  Future getCurrentDay(String theday) async {
     try {
       final db = await Erekdatabase.database;
-      dayProductivity.value = await db.query(tableName,
-          where: 'created_time = ?', whereArgs: [GlobalValues.nowStrShort]);
+      dayProductivity.value = await db
+          .query(tableName, where: 'created_time = ?', whereArgs: [theday]);
     } catch (e) {
       Snacks.errorSnack(e);
     }
@@ -95,7 +95,7 @@ class ProductivityCont extends GetxController {
           'note': oneHourNote.text
         });
         oneHourNote.clear();
-        getCurrentDay();
+        getCurrentDay(GlobalValues.nowStrShort);
       }
     } catch (e) {
       Snacks.errorSnack(e);
@@ -118,7 +118,7 @@ class ProductivityCont extends GetxController {
       final db = await Erekdatabase.database;
       db.delete(tableName, where: 'id = $id');
       getAllDay();
-      getCurrentDay();
+      getCurrentDay(GlobalValues.nowStrShort);
     } catch (e) {
       Snacks.errorSnack(e);
     }

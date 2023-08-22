@@ -17,7 +17,7 @@ class MyColors {
 
 class GlobalStatics {
   static List habitType = [
-    {"id": 1, "name": "morning", 'upperthat': 5, "downerthat": 10},
+    {"id": 1, "name": "morning", 'upperthat': 5, "downerthat": 7},
     {"id": 2, "name": "evening", 'upperthat': 18, "downerthat": 22},
   ];
 

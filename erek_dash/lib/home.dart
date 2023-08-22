@@ -9,6 +9,7 @@ import 'dart:io';
 
 import 'package:permission_handler/permission_handler.dart';
 
+import 'archived_screens.dart';
 import 'boxes/boxcont.dart';
 import 'boxes/boxlist.dart';
 import 'boxes/thebox.dart';
@@ -92,14 +93,14 @@ class _DashLandingState extends State<DashLanding> {
   final boxCont = Get.find<BoxCont>();
 
   GlobalKey<ScaffoldState> menuSidebarKey = GlobalKey<ScaffoldState>();
-  String homeTitle = 'Erek Dash';
+  String homeTitle = 'Erek dash 🤪';
 
   @override
   void initState() {
     super.initState();
     contIdeaStream.getAllNewIdeas();
     habitCont.getAllHabits();
-    productivityCont.getCurrentDay();
+    productivityCont.getCurrentDay(GlobalValues.nowStrShort);
     boxCont.allBoxes();
   }
 
@@ -120,98 +121,103 @@ class _DashLandingState extends State<DashLanding> {
             actions: [
               IconButton(
                   onPressed: () {
+                    Get.to(() => DayReview(theday: GlobalValues.nowStrShort));
+                  },
+                  icon: const Icon(Icons.local_fire_department,
+                      color: Colors.white)),
+              IconButton(
+                  onPressed: () {
                     menuSidebarKey.currentState?.openEndDrawer();
                   },
                   icon: const Icon(Icons.menu, color: Colors.white))
             ],
           ),
           key: menuSidebarKey,
-          endDrawer: Container(
-              width: 200,
-              height: double.infinity,
-              color: Colors.white,
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextButton(
-                          onPressed: () {
-                            Get.to(() => const Notes());
-                          },
-                          child: const Text(
-                            'notes',
-                            style: TextStyle(),
-                          )),
-                      TextButton(
-                          onPressed: () {
-                            Get.to(() => const Habits());
-                          },
-                          child: const Text(
-                            'habits',
-                            style: TextStyle(),
-                          )),
-                      TextButton(
-                          onPressed: () {
-                            configuration(context);
-                          },
-                          child: const Text(
-                            'configurations',
-                            style: TextStyle(),
-                          )),
-                      TextButton(
-                          onPressed: () {
-                            Get.to(() => const Gems());
-                          },
-                          child: const Text(
-                            'Gems',
-                            style: TextStyle(),
-                          )),
-                      TextButton(
-                          onPressed: () {
-                            Get.to(() => const BoxList());
-                          },
-                          child: const Text(
-                            'Boxes',
-                            style: TextStyle(),
-                          )),
-                      TextButton(
-                          onPressed: () {
-                            Get.to(() => const InterestingIdeas());
-                          },
-                          child: const Text(
-                            'Interesting ideas',
-                            style: TextStyle(),
-                          )),
-                      TextButton(
-                          onPressed: () {
-                            Get.to(() => const CompletedTasks());
-                          },
-                          child: const Text(
-                            'completed tasks',
-                            style: TextStyle(),
-                          )),
-                      TextButton(
-                          onPressed: () {
-                            Get.to(() => const ProductivityList());
-                          },
-                          child: const Text(
-                            'what have I done',
-                            style: TextStyle(),
-                          )),
-                      TextButton(
-                          onPressed: () {
-                            Get.to(() => const DayReview());
-                          },
-                          child: const Text(
-                            'day review',
-                            style: TextStyle(),
-                          )),
-                    ],
+          endDrawer: SingleChildScrollView(
+            child: Container(
+                width: 200,
+                height: Sizes.gHeight,
+                color: Colors.white,
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextButton(
+                            onPressed: () {
+                              Get.to(() => const ArchivedScreens());
+                            },
+                            child: const Text(
+                              'Archive',
+                              style: TextStyle(color: Colors.black),
+                            )),
+                        const Divider(),
+                        TextButton(
+                            onPressed: () {
+                              Get.to(() => const Gems());
+                            },
+                            child: const Text(
+                              'Gems',
+                              style: TextStyle(color: Colors.black),
+                            )),
+                        const Divider(),
+                        TextButton(
+                            onPressed: () {
+                              Get.to(() => const BoxList());
+                            },
+                            child: const Text(
+                              'Boxes',
+                              style: TextStyle(color: Colors.black),
+                            )),
+                        const Divider(),
+                        TextButton(
+                            onPressed: () {
+                              Get.to(() => const Habits());
+                            },
+                            child: const Text(
+                              'habits',
+                              style: TextStyle(color: Colors.black),
+                            )),
+                        const Divider(),
+                        TextButton(
+                            onPressed: () {
+                              Get.to(() => const InterestingIdeas());
+                            },
+                            child: const Text(
+                              'Interesting ideas',
+                              style: TextStyle(color: Colors.black),
+                            )),
+                        Orientation.landscape == true
+                            ? const SizedBox()
+                            : const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          alignment: Alignment.bottomCenter,
+                          width: double.infinity,
+                          height: 200,
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Colors.black),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(15)),
+                              image: const DecorationImage(
+                                  image: AssetImage(
+                                      'assets/images/idealamp.jpeg'))),
+                          child: const Text('charge up'),
+                        ),
+                        TextButton(
+                            onPressed: () {
+                              configuration(context);
+                            },
+                            child: const Text(
+                              'configurations',
+                              style: TextStyle(color: Colors.black),
+                            )),
+                      ],
+                    ),
                   ),
-                ),
-              )),
+                )),
+          ),
           body: TabBarView(
             children: [
               SingleChildScrollView(

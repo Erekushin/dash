@@ -90,12 +90,11 @@ class TaskCont extends GetxController {
   }
 
   RxList dayComplitedTasks = [].obs;
-  Future getDayComplitedTasks() async {
+  Future getDayComplitedTasks(String theday) async {
     try {
       final db = await Erekdatabase.database;
       dayComplitedTasks.value = await db.query(tableName,
-          where: 'done_it = ? AND finished_time = ?',
-          whereArgs: ['1', GlobalValues.nowStrShort]);
+          where: 'done_it = ? AND finished_time = ?', whereArgs: ['1', theday]);
     } catch (e) {
       Snacks.errorSnack(e);
     }

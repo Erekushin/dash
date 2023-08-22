@@ -118,11 +118,11 @@ class HabitCont extends GetxController {
   }
 
   RxList dayProgress = [].obs;
-  Future dayHabitProgress() async {
+  Future dayHabitProgress(String theday) async {
     try {
       final db = await Erekdatabase.database;
-      dayProgress.value = await db.query(progressTableName,
-          where: 'day_date = ?', whereArgs: [GlobalValues.nowStrShort]);
+      dayProgress.value = await db
+          .query(progressTableName, where: 'day_date = ?', whereArgs: [theday]);
     } catch (e) {
       Snacks.errorSnack(e);
     }
