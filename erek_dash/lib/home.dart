@@ -306,7 +306,7 @@ class _DashLandingState extends State<DashLanding> {
                               child: Center(child: GetX<TaskCont>(
                                 builder: (littleCont) {
                                   return Text(
-                                    'there is ${littleCont.taskListBody.value.taskList.length} tasks in total / add here...',
+                                    'there is ${littleCont.taskList.length} tasks in total / add here...',
                                     style: const TextStyle(color: Colors.white),
                                   );
                                 },

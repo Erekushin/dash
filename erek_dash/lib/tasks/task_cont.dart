@@ -1,4 +1,5 @@
 import 'package:erek_dash/globals.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../helpers/time.dart';
@@ -12,17 +13,41 @@ class TaskCont extends GetxController {
   Task task = Task();
   String tableName = 'tasks';
 
-  var taskListBody = TaskListBody(taskList: []).obs;
-  Future<dynamic> getAll() async {
-    try {
-      final db = await Erekdatabase.database;
-      var data = await db.query(tableName, where: 'active = 1 AND done_it = 0');
+  // var taskListBody = TaskListBody(taskList: []).obs;
+  // Future<dynamic> getAll() async {
+  //   try {
+  //     final db = await Erekdatabase.database;
+  //     var data = await db.query(tableName, where: 'active = 1 AND done_it = 0');
 
-      taskListBody.value = calculateTimeValue(data);
+  //     taskListBody.value = calculateTimeValue(data);
+  //   } catch (e) {
+  //     Snacks.errorSnack(e);
+  //   }
+  //   // print(const JsonEncoder.withIndent('  ').convert(taskList[0]));
+  // }
+
+  RxList taskList = [].obs;
+  Future getAllTask() async {
+    taskList.clear();
+    const String path = 'orders';
+    try {
+      DatabaseReference reference = StaticHelpers.databaseReference.child(path);
+      // Set up a real-time listener.
+      reference.onValue.listen((DatabaseEvent event) {
+        if (event.snapshot.exists) {
+          Map<dynamic, dynamic> data =
+              event.snapshot.value as Map<dynamic, dynamic>;
+          data.forEach((key, value) {
+            taskList.add(Map<String, dynamic>.from(value));
+          });
+        }
+      }, onError: (Object error) {
+        // Handle any errors that occur during the listening process.
+        print("Error: $error");
+      });
     } catch (e) {
-      Snacks.errorSnack(e);
+      print('error $e');
     }
-    // print(const JsonEncoder.withIndent('  ').convert(taskList[0]));
   }
 
   TaskListBody calculateTimeValue(givenData) {
@@ -168,7 +193,7 @@ class TaskCont extends GetxController {
         Snacks.errorSnack(e);
       }
     }
-    getAll();
+    getAllTask();
   }
 
   TextEditingController editCnt = TextEditingController();
@@ -186,7 +211,7 @@ class TaskCont extends GetxController {
       data,
       where: 'id = $id',
     );
-    getAll();
+    getAllTask();
     Get.back();
     Snacks.updatedSnack();
   }
@@ -198,6 +223,6 @@ class TaskCont extends GetxController {
       where: 'id = ?',
       whereArgs: [id],
     );
-    getAll();
+    getAllTask();
   }
 }

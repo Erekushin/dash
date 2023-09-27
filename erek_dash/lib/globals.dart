@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:get/get.dart';
@@ -55,6 +57,13 @@ class Erekdatabase {
       await _database!.close();
     }
   }
+}
+
+class StaticHelpers {
+  static User? userInfo;
+  static bool darkMode = false;
+  static final DatabaseReference databaseReference =
+      FirebaseDatabase.instance.ref();
 }
 
 class GlobalValues {

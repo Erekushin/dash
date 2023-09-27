@@ -12,10 +12,12 @@ import 'notes/note_cont.dart';
 import 'idea_stream/idea_stream_cont.dart';
 import 'globals.dart';
 import 'home.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   // firebase version
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
