@@ -33,21 +33,22 @@ class _TaskListState extends State<TaskList> {
               var item = littleCont.taskList[index];
               return InkWell(
                 onTap: () {
-                  littleCont.editCnt.text = item.txt!;
-                  littleCont.editstartingDate.text = item.startingTime ??
-                      item.startingTime.toString().substring(0, 10);
-                  littleCont.editstartingTime.text = item.startingTime ??
-                      item.startingTime.toString().substring(11, 16);
-                  littleCont.editpinnedDate.text = item.pinnedTime ??
-                      item.pinnedTime.toString().substring(0, 10);
-                  littleCont.editpinnedTime.text = item.pinnedTime ??
-                      item.pinnedTime.toString().substring(11, 16);
-                  littleCont.editimportancy.text = item.importancy.toString();
+                  littleCont.txtCnt.text = item['task'];
+                  littleCont.startingDate.text = item['starting_time'] ??
+                      item['starting_time'].toString().substring(0, 10);
+                  littleCont.startingTime.text = item['starting_time'] ??
+                      item['starting_time'].toString().substring(11, 16);
+                  littleCont.pinnedDate.text = item['pinned_time'] ??
+                      item['pinned_time'].toString().substring(0, 10);
+                  littleCont.pinnedTime.text = item['pinned_time'] ??
+                      item['pinned_time'].toString().substring(11, 16);
+                  littleCont.importancy.text = item['importancy'];
 
                   Get.to(() => TaskEdit(
                         item: item,
-                        selectedLabelid: item.label ?? 0,
-                        selectedLabelname: item.labelname ?? '',
+                        id: cont.entryNames[index],
+                        selectedLabelid: item['label'] ?? 0,
+                        selectedLabelname: item['labelname'] ?? '',
                       ));
                 },
                 child: Container(
@@ -65,7 +66,7 @@ class _TaskListState extends State<TaskList> {
                       SizedBox(
                         width: 260,
                         child: Text(
-                          item.txt!,
+                          item['task'],
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -78,7 +79,7 @@ class _TaskListState extends State<TaskList> {
                           color: Colors.black,
                         ),
                         child: Text(
-                          item.timeValue?.toString() ?? '0',
+                          item['timeValue'].toString(),
                           style: const TextStyle(
                               color: Colors.white, fontSize: 20),
                         ),

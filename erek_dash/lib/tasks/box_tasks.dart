@@ -22,24 +22,25 @@ class _BoxTaskState extends State<BoxTask> {
       builder: (littleCont) {
         return ListView.builder(
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: littleCont.boxTasks.value.taskList.length,
+            itemCount: 3, // littleCont.boxTasks.value.taskList.length,
             shrinkWrap: true,
             itemBuilder: (c, index) {
-              var item = littleCont.boxTasks.value.taskList[index];
+              var item; // = littleCont.boxTasks.value.taskList[index];
               return InkWell(
                 onTap: () {
-                  littleCont.editCnt.text = item.txt!;
-                  littleCont.editstartingDate.text = item.startingTime ??
+                  littleCont.txtCnt.text = item.txt!;
+                  littleCont.startingDate.text = item.startingTime ??
                       item.startingTime.toString().substring(0, 10);
-                  littleCont.editstartingTime.text = item.startingTime ??
+                  littleCont.startingTime.text = item.startingTime ??
                       item.startingTime.toString().substring(11, 16);
-                  littleCont.editpinnedDate.text = item.pinnedTime ??
+                  littleCont.pinnedDate.text = item.pinnedTime ??
                       item.pinnedTime.toString().substring(0, 10);
-                  littleCont.editpinnedTime.text = item.pinnedTime ??
+                  littleCont.pinnedTime.text = item.pinnedTime ??
                       item.pinnedTime.toString().substring(11, 16);
-                  littleCont.editimportancy.text = item.importancy.toString();
+                  littleCont.importancy.text = item.importancy.toString();
                   Get.to(() => TaskEdit(
                         item: item,
+                        id: cont.entryNames[index],
                         selectedLabelid: item.label!,
                         selectedLabelname: item.labelname ?? '',
                       ));

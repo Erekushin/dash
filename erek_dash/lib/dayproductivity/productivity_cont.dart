@@ -77,9 +77,9 @@ class ProductivityCont extends GetxController {
   RxList dayProductivity = [].obs;
   Future getCurrentDay(String theday) async {
     try {
-      final db = await Erekdatabase.database;
-      dayProductivity.value = await db
-          .query(tableName, where: 'created_time = ?', whereArgs: [theday]);
+      // final db = await Erekdatabase.database;
+      // dayProductivity.value = await db
+      //     .query(tableName, where: 'created_time = ?', whereArgs: [theday]);
     } catch (e) {
       Snacks.errorSnack(e);
     }

@@ -14,7 +14,7 @@ class CompletedTasks extends StatefulWidget {
 
 class _CompletedTasksState extends State<CompletedTasks> {
   final cont = Get.find<TaskCont>();
-  late int chosenId;
+  late String chosenId;
   RxBool editVis = false.obs;
   @override
   void initState() {
@@ -90,8 +90,9 @@ class _CompletedTasksState extends State<CompletedTasks> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             standartBtn('undo it', () {
-                              littleCont.updateTask(chosenId,
-                                  {'done_it': 0, 'finished_time': ""});
+                              littleCont.doneIt = 0;
+                              littleCont.finishedTime = "";
+                              littleCont.updateTask(chosenId);
                             }),
                             IconButton(
                                 onPressed: () {

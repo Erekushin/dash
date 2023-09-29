@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -64,6 +65,15 @@ class StaticHelpers {
   static bool darkMode = false;
   static final DatabaseReference databaseReference =
       FirebaseDatabase.instance.ref();
+
+  static String _id = '';
+  static String get id {
+    DateTime now = DateTime.now();
+    final int random = Random().nextInt(10);
+    _id =
+        "${now.year}${now.month}${now.day}${now.hour}${now.minute}${now.second}$random";
+    return _id;
+  }
 }
 
 class GlobalValues {

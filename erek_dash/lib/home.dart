@@ -37,68 +37,19 @@ class DashLanding extends StatefulWidget {
 }
 
 class _DashLandingState extends State<DashLanding> {
-  // final dbHelper = DatabaseHelper();
-
-  // void update() async {
-  //   final updatedData = {'id': 1, 'name': 'Updated John', 'age': 28};
-  //   await dbHelper.updateData('my_table', updatedData);
-  // }
-
-  // void reaAfterUpdate() async {
-  //   final updatedDataList = await dbHelper.fetchData('my_table');
-  //   updatedDataList.forEach((data) {
-  //     print('ID: ${data['id']}, Name: ${data['name']}, Age: ${data['age']}');
-  //   });
-  // }
-
-  // void delete() async {
-  //   await dbHelper.deleteData('my_table', 1);
-  // }
-
-  // void readAfterdeleter() async {
-  //   final newDataList = await dbHelper.fetchData('my_table');
-  //   newDataList.forEach((data) {
-  //     print('ID: ${data['id']}, Name: ${data['name']}, Age: ${data['age']}');
-  //   });
-  // }
-
-  Future<String> getExternalDirectoryPath() async {
-    if (await Permission.storage.request().isGranted) {
-      const directory = "storage/emulated/0/Documents/erekdash_data";
-      return directory;
-    } else {
-      throw Exception('Permission denied');
-    }
-  }
-
-  Future<void> writeToFile(String data) async {
-    final directoryPath = await getExternalDirectoryPath();
-    final customDirectoryPath = '$directoryPath/';
-
-    // Create the custom directory if it doesn't exist
-    Directory customDirectory = Directory(customDirectoryPath);
-    if (!customDirectory.existsSync()) {
-      customDirectory.createSync(recursive: true);
-    }
-
-    // Write data to the file
-    final file = File('$customDirectoryPath/ideaGate.json');
-    await file.writeAsString(data);
-  }
-
-  final contIdeaStream = Get.find<IdeaStreamCont>();
+  final ideaStreamCont = Get.find<IdeaStreamCont>();
   final taskCont = Get.find<TaskCont>();
   final habitCont = Get.find<HabitCont>();
   final productivityCont = Get.find<ProductivityCont>();
   final boxCont = Get.find<BoxCont>();
 
   GlobalKey<ScaffoldState> menuSidebarKey = GlobalKey<ScaffoldState>();
-  String homeTitle = 'Erek dash 🤪';
+  String homeTitle = 'Erek dash ';
 
   @override
   void initState() {
     super.initState();
-    contIdeaStream.getAllNewIdeas();
+    ideaStreamCont.getAllNewIdeas();
     habitCont.getAllHabits();
     productivityCont.getCurrentDay(GlobalValues.nowStrShort);
     boxCont.allBoxes();
@@ -447,7 +398,7 @@ class _DashLandingState extends State<DashLanding> {
             return SafeArea(
               child: GestureDetector(
                 onTap: () {
-                  contIdeaStream.insertIdea();
+                  ideaStreamCont.insertIdea();
                   Navigator.of(context).pop();
                 },
                 child: Scaffold(
@@ -467,7 +418,7 @@ class _DashLandingState extends State<DashLanding> {
                                 color: Colors.white.withOpacity(0),
                                 shadowColor: Colors.transparent,
                                 child: TextField(
-                                  controller: contIdeaStream.ideaTxtCnt,
+                                  controller: ideaStreamCont.ideaTxtCnt,
                                   maxLines:
                                       null, // Set maxLines to null for multiline support
                                   decoration: const InputDecoration(

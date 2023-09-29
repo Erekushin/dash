@@ -7,6 +7,7 @@ import '../helpers/time.dart';
 import '../widgets/widget_tools.dart';
 import 'task_cont.dart';
 
+// ignore: must_be_immutable
 class TaskGate extends StatefulWidget {
   TaskGate({super.key, required this.incomingIsMoving});
   bool incomingIsMoving;

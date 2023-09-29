@@ -29,8 +29,8 @@ class HabitCont extends GetxController {
   RxList<CurrentHabit> packagedList = <CurrentHabit>[].obs;
   Future<dynamic> getAllHabits() async {
     try {
-      final db = await Erekdatabase.database;
-      habitList.value = await db.query(tableName);
+      // final db = await Erekdatabase.database;
+      // habitList.value = await db.query(tableName);
       packageHabits();
     } catch (e) {
       Snacks.errorSnack(e);

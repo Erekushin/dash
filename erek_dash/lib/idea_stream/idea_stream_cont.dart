@@ -8,8 +8,8 @@ class IdeaStreamCont extends GetxController {
   RxList ideaList = [].obs;
   Future<dynamic> getAllNewIdeas() async {
     try {
-      final db = await Erekdatabase.database;
-      ideaList.value = await db.query(tableName);
+      // final db = await Erekdatabase.database;
+      // ideaList.value = await db.query(tableName);
     } catch (e) {
       Snacks.errorSnack(e);
     }

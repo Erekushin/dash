@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import '../boxes/boxcont.dart';
 import 'task_cont.dart';
 import '../helpers/time.dart';
-import 'task_model.dart';
 import '../widgets/buttons.dart';
 import '../widgets/widget_tools.dart';
 
@@ -14,9 +13,11 @@ class TaskEdit extends StatefulWidget {
   TaskEdit(
       {super.key,
       required this.item,
+      required this.id,
       required this.selectedLabelid,
       required this.selectedLabelname});
-  final Task item;
+  final item;
+  final String id;
   String selectedLabelname;
   int selectedLabelid;
   @override
@@ -51,7 +52,7 @@ class _TaskEditState extends State<TaskEdit> {
                     left: 40, right: 40, top: 5, bottom: 5),
                 padding: const EdgeInsets.all(10),
                 child: TextField(
-                  controller: cont.editCnt,
+                  controller: cont.txtCnt,
                   maxLines: null, // Set maxLines to null for multiline support
                   decoration: const InputDecoration(
                     hintText: 'new task... ',
@@ -93,12 +94,12 @@ class _TaskEditState extends State<TaskEdit> {
                               enabled: false,
                               onTap: () {},
                               textAlign: TextAlign.center,
-                              controller: cont.editstartingDate,
+                              controller: cont.startingDate,
                             ), () async {
                           String incomingValue =
                               await timeHelper.selectDate(context);
                           if (incomingValue.isNotEmpty) {
-                            cont.editstartingDate.text = incomingValue;
+                            cont.startingDate.text = incomingValue;
                           }
                         }),
                         taskProperty(
@@ -107,12 +108,12 @@ class _TaskEditState extends State<TaskEdit> {
                               enabled: false,
                               onTap: () {},
                               textAlign: TextAlign.center,
-                              controller: cont.editstartingTime,
+                              controller: cont.startingTime,
                             ), () async {
                           String incomingValue =
                               await timeHelper.selectTime(context);
                           if (incomingValue.isNotEmpty) {
-                            cont.editstartingTime.text = incomingValue;
+                            cont.startingTime.text = incomingValue;
                           }
                         }),
                       ],
@@ -125,12 +126,12 @@ class _TaskEditState extends State<TaskEdit> {
                               enabled: false,
                               onTap: () {},
                               textAlign: TextAlign.center,
-                              controller: cont.editpinnedDate,
+                              controller: cont.pinnedDate,
                             ), () async {
                           String incomingValue =
                               await timeHelper.selectDate(context);
                           if (incomingValue.isNotEmpty) {
-                            cont.editpinnedDate.text = incomingValue;
+                            cont.pinnedDate.text = incomingValue;
                           }
                         }),
                         taskProperty(
@@ -139,12 +140,12 @@ class _TaskEditState extends State<TaskEdit> {
                               enabled: false,
                               onTap: () {},
                               textAlign: TextAlign.center,
-                              controller: cont.editpinnedTime,
+                              controller: cont.pinnedTime,
                             ), () async {
                           String incomingValue =
                               await timeHelper.selectTime(context);
                           if (incomingValue.isNotEmpty) {
-                            cont.editpinnedTime.text = incomingValue;
+                            cont.pinnedTime.text = incomingValue;
                           }
                         }),
                       ],
@@ -160,7 +161,7 @@ class _TaskEditState extends State<TaskEdit> {
                               keyboardType: TextInputType.number,
                               onTap: () {},
                               textAlign: TextAlign.center,
-                              controller: cont.editimportancy,
+                              controller: cont.importancy,
                             ),
                             () {}),
                         taskProperty(
@@ -236,7 +237,7 @@ class _TaskEditState extends State<TaskEdit> {
                     Row(
                       children: [
                         const Text('Duration  '),
-                        Text(widget.item.spendingTime.toString()),
+                        Text(widget.item['spending_time'].toString()),
                         const Text('  hours')
                       ],
                     ),
@@ -246,7 +247,7 @@ class _TaskEditState extends State<TaskEdit> {
                     Row(
                       children: [
                         const Text('Remaining  '),
-                        Text(widget.item.remaininghours.toString()),
+                        Text(widget.item['remaininghours'].toString()),
                         const Text('  hours'),
                       ],
                     ),
@@ -255,43 +256,18 @@ class _TaskEditState extends State<TaskEdit> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         standartBtn('save new values', () {
-                          int speningHoursedit = 1;
-                          String fullstartingTimeedit = '';
-                          String fullpinnedTimeedit = '';
-                          print('object1');
-                          if (cont.editstartingDate.text.isNotEmpty &&
-                              cont.editpinnedDate.text.isNotEmpty) {
-                            speningHoursedit = timeHelper.calculateHoursDifference(
-                                '${cont.editstartingDate.text} ${cont.editstartingTime.text}:00.000',
-                                '${cont.editpinnedDate.text} ${cont.editpinnedTime.text}:00.000');
-
-                            fullstartingTimeedit =
-                                '${cont.editstartingDate.text} ${cont.editstartingTime.text}:00.000';
-                            fullpinnedTimeedit =
-                                '${cont.editpinnedDate.text} ${cont.editpinnedTime.text}:00.000';
-                          }
-                          cont.updateTask(widget.item.id!, {
-                            'task': cont.editCnt.text,
-                            'updated_time': GlobalValues.nowStr,
-                            'starting_time': fullstartingTimeedit,
-                            'pinned_time': fullpinnedTimeedit,
-                            'importancy': cont.editimportancy.text,
-                            'spending_time': speningHoursedit,
-                            'label': widget.selectedLabelid,
-                            'labelname': widget.selectedLabelname
-                          });
+                          cont.updatedTime = GlobalValues.nowStr;
+                          cont.updateTask(widget.id);
                         }),
                         const SizedBox(width: 10),
                         standartBtn('Nailed It', () {
-                          cont.updateTask(widget.item.id!, {
-                            'done_it': 1,
-                            'finished_time': GlobalValues.nowStrShort
-                          });
+                          cont.doneIt = 1;
+                          cont.finishedTime = GlobalValues.nowStrShort;
+                          cont.updateTask(widget.id);
                         }),
                         IconButton(
                             onPressed: () {
-                              cont.deleteTask(widget.item.id!);
-                              Get.back();
+                              cont.deleteTask(widget.id);
                             },
                             icon: const Icon(
                               Icons.delete,

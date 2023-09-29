@@ -11,8 +11,8 @@ class BoxCont extends GetxController {
   RxList boxList = [].obs;
   Future allBoxes() async {
     try {
-      final db = await Erekdatabase.database;
-      boxList.value = await db.query(tableName);
+      // final db = await Erekdatabase.database;
+      // boxList.value = await db.query(tableName);
     } catch (e) {
       Snacks.errorSnack(e);
     }

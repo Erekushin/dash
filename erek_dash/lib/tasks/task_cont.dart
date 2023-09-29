@@ -1,69 +1,84 @@
+import 'dart:math';
+
 import 'package:erek_dash/globals.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../helpers/time.dart';
 import '../idea_stream/idea_stream_cont.dart';
-import 'task_model.dart';
 import '../widgets/snacks.dart';
 
 class TaskCont extends GetxController {
+  Map<String, dynamic> taskValues() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    int speningHours = 1;
+    String fullstartingTime = '';
+    String fullpinnedTime = '';
+    if (startingDate.text.isNotEmpty && pinnedDate.text.isNotEmpty) {
+      speningHours = timeHelper.calculateHoursDifference(
+          '${startingDate.text} ${startingTime.text}:00.000',
+          '${pinnedDate.text} ${pinnedTime.text}:00.000');
+
+      fullstartingTime = '${startingDate.text} ${startingTime.text}:00.000';
+      fullpinnedTime = '${pinnedDate.text} ${pinnedTime.text}:00.000';
+    }
+    int i = int.parse(importancy.text);
+    if (i > 10) {
+      importancy.text = '10';
+    }
+    data['task'] = txtCnt.text;
+    data['created_time'] = GlobalValues.nowStr;
+    data['updated_time'] = GlobalValues.nowStr;
+    data['starting_time'] = fullstartingTime;
+    data['pinned_time'] = fullpinnedTime;
+    data['importancy'] = importancy.text;
+    data['spending_time'] = speningHours;
+    data['label'] = selectedLabelid;
+    data['labelname'] = selectedLabelname;
+    data['active'] = 1;
+    data['done_it'] = doneIt;
+    data['finished_time'] = finishedTime;
+
+    return data;
+  }
+
   final ideaCont = Get.find<IdeaStreamCont>();
   TimeHelper timeHelper = TimeHelper();
-  Task task = Task();
-  String tableName = 'tasks';
-
-  // var taskListBody = TaskListBody(taskList: []).obs;
-  // Future<dynamic> getAll() async {
-  //   try {
-  //     final db = await Erekdatabase.database;
-  //     var data = await db.query(tableName, where: 'active = 1 AND done_it = 0');
-
-  //     taskListBody.value = calculateTimeValue(data);
-  //   } catch (e) {
-  //     Snacks.errorSnack(e);
-  //   }
-  //   // print(const JsonEncoder.withIndent('  ').convert(taskList[0]));
-  // }
+  String path = 'tasks';
 
   RxList taskList = [].obs;
+  List entryNames = [];
   Future getAllTask() async {
-    taskList.clear();
-    const String path = 'orders';
     try {
-      DatabaseReference reference = StaticHelpers.databaseReference.child(path);
-      // Set up a real-time listener.
-      reference.onValue.listen((DatabaseEvent event) {
-        if (event.snapshot.exists) {
-          Map<dynamic, dynamic> data =
-              event.snapshot.value as Map<dynamic, dynamic>;
-          data.forEach((key, value) {
-            taskList.add(Map<String, dynamic>.from(value));
-          });
-        }
-      }, onError: (Object error) {
-        // Handle any errors that occur during the listening process.
-        print("Error: $error");
-      });
+      DatabaseEvent a =
+          await StaticHelpers.databaseReference.child(path).once();
+      if (a.snapshot.exists) {
+        Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
+        entryNames = data.keys.toList();
+        taskList.value = data.values.toList();
+        calculateTimeValue(taskList);
+      } else {
+        taskList.clear();
+      }
     } catch (e) {
-      print('error $e');
+      Snacks.errorSnack(e);
+      print(e);
     }
   }
 
-  TaskListBody calculateTimeValue(givenData) {
+  calculateTimeValue(List taskList) {
 // давталтаар нэг бүрчлэн бодоод үлдсэн хугацаа зарцуулагдах хугацааг нь тооцсон
-    var innertaskListBody = TaskListBody(taskList: []);
-    innertaskListBody = TaskListBody.fromJson(givenData);
-    for (int i = 0; i < innertaskListBody.taskList.length; i++) {
-      var item = innertaskListBody.taskList[i];
-      int timeValue = item.importancy!;
+
+    for (int i = 0; i < taskList.length; i++) {
+      var item = taskList[i];
+      int timeValue = int.parse(item['importancy']);
       int remainingHour = 1000;
-      if (item.pinnedTime! != '') {
+      if (item['pinned_time'] != '') {
         remainingHour = timeHelper.calculateHoursDifference(
-            GlobalValues.nowStr, item.pinnedTime!);
+            GlobalValues.nowStr, item['pinned_time']);
       }
 
-      int remainingValue = remainingHour ~/ item.spendingTime!;
+      int remainingValue = remainingHour ~/ item['spending_time'];
       if (remainingValue >= 9) {
         timeValue = timeValue + 1;
       } else {
@@ -95,46 +110,12 @@ class TaskCont extends GetxController {
           default:
         }
       }
-      innertaskListBody.taskList[i].timeValue = timeValue / 2;
-      innertaskListBody.taskList[i].remaininghours = remainingHour;
+      taskList[i]['timeValue'] = timeValue / 2;
+      taskList[i]['remaininghours'] = remainingHour;
     }
 
-    innertaskListBody.taskList
-        .sort((a, b) => b.timeValue!.compareTo(a.timeValue!));
-    return innertaskListBody;
-  }
-
-  RxList completedList = [].obs;
-  Future getAllCompleted() async {
-    try {
-      final db = await Erekdatabase.database;
-      completedList.value = await db.query(tableName, where: 'done_it = 1');
-    } catch (e) {
-      Snacks.errorSnack(e);
-    }
-  }
-
-  RxList dayComplitedTasks = [].obs;
-  Future getDayComplitedTasks(String theday) async {
-    try {
-      final db = await Erekdatabase.database;
-      dayComplitedTasks.value = await db.query(tableName,
-          where: 'done_it = ? AND finished_time = ?', whereArgs: ['1', theday]);
-    } catch (e) {
-      Snacks.errorSnack(e);
-    }
-  }
-
-  var boxTasks = TaskListBody(taskList: []).obs;
-  Future getBoxTasks(int boxid) async {
-    try {
-      final db = await Erekdatabase.database;
-      var data =
-          await db.query(tableName, where: 'label = $boxid AND done_it = 0');
-      boxTasks.value = calculateTimeValue(data);
-    } catch (e) {
-      Snacks.errorSnack(e);
-    }
+    taskList.sort((a, b) => b['timeValue']!.compareTo(a['timeValue']!));
+    return taskList;
   }
 
   int selectedLabelid = 0;
@@ -148,47 +129,24 @@ class TaskCont extends GetxController {
   Future insertTask(bool movingIn) async {
     if (txtCnt.text.isNotEmpty) {
       try {
-        int speningHours = 1;
-        String fullstartingTime = '';
-        String fullpinnedTime = '';
-        if (startingDate.text.isNotEmpty && pinnedDate.text.isNotEmpty) {
-          speningHours = timeHelper.calculateHoursDifference(
-              '${startingDate.text} ${startingTime.text}:00.000',
-              '${pinnedDate.text} ${pinnedTime.text}:00.000');
-
-          fullstartingTime = '${startingDate.text} ${startingTime.text}:00.000';
-          fullpinnedTime = '${pinnedDate.text} ${pinnedTime.text}:00.000';
-        }
-        int i = int.parse(importancy.text);
-        if (i > 10) {
-          importancy.text = '10';
-        }
-        final db = await Erekdatabase.database;
-        await db.insert(tableName, {
-          'task': txtCnt.text,
-          'created_time': GlobalValues.nowStr,
-          'updated_time': GlobalValues.nowStr,
-          'starting_time': fullstartingTime,
-          'pinned_time': fullpinnedTime,
-          'importancy': importancy.text,
-          'spending_time': speningHours,
-          'label': selectedLabelid,
-          'labelname': selectedLabelname,
-          'active': 1,
-          'done_it': 0
+        StaticHelpers.databaseReference
+            .child('$path/${StaticHelpers.id}')
+            .set(taskValues())
+            .whenComplete(() {
+          print('dfdf');
+          txtCnt.clear();
+          startingDate.clear();
+          pinnedDate.clear();
+          startingTime.clear();
+          pinnedTime.clear();
+          importancy.text = '1';
+          selectedLabelid = 0;
+          selectedLabelname = 'choose box';
+          if (movingIn) {
+            ideaCont.deleteIdea(GlobalValues.movingIncomingIdeaId!);
+          }
+          Snacks.savedSnack();
         });
-        txtCnt.clear();
-        startingDate.clear();
-        pinnedDate.clear();
-        startingTime.clear();
-        pinnedTime.clear();
-        importancy.text = '1';
-        selectedLabelid = 0;
-        selectedLabelname = 'choose box';
-        if (movingIn) {
-          ideaCont.deleteIdea(GlobalValues.movingIncomingIdeaId!);
-        }
-        Snacks.savedSnack();
       } catch (e) {
         Snacks.errorSnack(e);
       }
@@ -196,33 +154,58 @@ class TaskCont extends GetxController {
     getAllTask();
   }
 
-  TextEditingController editCnt = TextEditingController();
-  TextEditingController editimportancy = TextEditingController();
-  TextEditingController editstartingDate = TextEditingController();
-  TextEditingController editpinnedDate = TextEditingController();
-  TextEditingController editstartingTime = TextEditingController();
-  TextEditingController editpinnedTime = TextEditingController();
-  Future updateTask(int id, Map<String, dynamic> data) async {
-    editCnt.text = editCnt.text.trimRight();
-    final db = await Erekdatabase.database;
-
-    db.update(
-      tableName,
-      data,
-      where: 'id = $id',
-    );
-    getAllTask();
-    Get.back();
-    Snacks.updatedSnack();
+  void deleteTask(String id) {
+    StaticHelpers.databaseReference.child("$path/$id").remove().then((_) {
+      getAllTask();
+      Get.back();
+    });
   }
 
-  Future deleteTask(int id) async {
-    final db = await Erekdatabase.database;
-    db.delete(
-      tableName,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-    getAllTask();
+  int doneIt = 0;
+  String finishedTime = '';
+  String updatedTime = '';
+  Future updateTask(String id) async {
+    txtCnt.text = txtCnt.text.trimRight();
+    StaticHelpers.databaseReference
+        .child('$path/$id')
+        .set(taskValues())
+        .whenComplete(() {
+      getAllTask();
+      Get.back();
+      Snacks.updatedSnack();
+    });
+  }
+
+  RxList completedList = [].obs;
+  Future getAllCompleted() async {
+    try {
+      // final db = await Erekdatabase.database;
+      // completedList.value = await db.query(tableName, where: 'done_it = 1');
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  RxList dayComplitedTasks = [].obs;
+  Future getDayComplitedTasks(String theday) async {
+    try {
+      // final db = await Erekdatabase.database;
+      // dayComplitedTasks.value = await db.query(tableName,
+      //     where: 'done_it = ? AND finished_time = ?', whereArgs: ['1', theday]);
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  // var boxTasks = TaskListBody(taskList: []).obs;
+  Future getBoxTasks(int boxid) async {
+    try {
+      // final db = await Erekdatabase.database;
+      // var data =
+      //     await db.query(tableName, where: 'label = $boxid AND done_it = 0');
+      // boxTasks.value = calculateTimeValue(data);
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
   }
 }
