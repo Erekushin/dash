@@ -19,21 +19,7 @@ class _BoxListState extends State<BoxList> {
   final cont = Get.find<BoxCont>();
   File? _image;
 
-  Future<void> _saveImage() async {
-    try {
-      String path = await GlobalValues.imageFolderPath;
-      if (_image != null) {
-        final fileName = cont.boxNameTxt.text;
-        final newImagePath = '$path/$fileName.jpg';
-        await _image!.copy(newImagePath);
-        cont.insertBox('$path/$fileName.jpg');
-        _image = null;
-        // You can now use the newImagePath to access the copied image file.
-      }
-    } catch (e) {
-      print(e.toString());
-    }
-  }
+  Future<void> pickImagefromGallery() async {}
 
   @override
   void initState() {
@@ -68,6 +54,7 @@ class _BoxListState extends State<BoxList> {
                   onTap: () {
                     Get.to(() => TheBox(
                           item: item,
+                          id: littleCont.entryNames[i],
                         ));
                   },
                   child: Container(
@@ -85,12 +72,15 @@ class _BoxListState extends State<BoxList> {
                             height: 200,
                             width: double.infinity,
                             decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    image: FileImage(
-                                      File(item['picture']),
-                                    ),
-                                    fit: BoxFit.cover),
-                                color: Colors.amber,
+                                image: item['picture'] == ''
+                                    ? const DecorationImage(
+                                        image: AssetImage(
+                                            'assets/images/imagedefault.png'),
+                                        fit: BoxFit.cover)
+                                    : DecorationImage(
+                                        image: NetworkImage(item['picture']),
+                                        fit: BoxFit.cover),
+                                color: Colors.grey,
                                 borderRadius: const BorderRadius.all(
                                     Radius.circular(15))),
                           ),
@@ -129,7 +119,8 @@ class _BoxListState extends State<BoxList> {
               child: GestureDetector(
                 onTap: () {
                   Get.back();
-                  _saveImage();
+                  cont.insertBox();
+                  _image = null;
                 },
                 child: Scaffold(
                   resizeToAvoidBottomInset: true, // Set this to true
@@ -180,12 +171,15 @@ class _BoxListState extends State<BoxList> {
                             height: 150,
                             child: InkWell(
                               onTap: () async {
-                                final imagePicker = ImagePicker();
-                                final pickedImage = await imagePicker.pickImage(
+                                final picker = ImagePicker();
+                                final pickedFile = await picker.pickImage(
                                     source: ImageSource.gallery);
 
-                                if (pickedImage != null) {
-                                  _image = File(pickedImage.path);
+                                if (pickedFile != null) {
+                                  _image = File(pickedFile.path);
+                                  final imageBytes =
+                                      await pickedFile.readAsBytes();
+                                  cont.boxImg.insert(0, imageBytes);
                                 }
                                 setstate(() {});
                               },

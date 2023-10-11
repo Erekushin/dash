@@ -33,16 +33,7 @@ class _TaskListState extends State<TaskList> {
               var item = littleCont.taskList[index];
               return InkWell(
                 onTap: () {
-                  littleCont.txtCnt.text = item['task'];
-                  littleCont.startingDate.text = item['starting_time'] ??
-                      item['starting_time'].toString().substring(0, 10);
-                  littleCont.startingTime.text = item['starting_time'] ??
-                      item['starting_time'].toString().substring(11, 16);
-                  littleCont.pinnedDate.text = item['pinned_time'] ??
-                      item['pinned_time'].toString().substring(0, 10);
-                  littleCont.pinnedTime.text = item['pinned_time'] ??
-                      item['pinned_time'].toString().substring(11, 16);
-                  littleCont.importancy.text = item['importancy'];
+                  littleCont.setValues(item);
 
                   Get.to(() => TaskEdit(
                         item: item,

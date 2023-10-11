@@ -3,22 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../widgets/gates.dart';
-import 'idea_cont.dart';
+import 'lang.dart';
+import 'lang_cont.dart';
 
-class InterestingIdeas extends StatefulWidget {
-  const InterestingIdeas({super.key});
+class Langs extends StatefulWidget {
+  const Langs({super.key});
 
   @override
-  State<InterestingIdeas> createState() => _InterestingIdeasState();
+  State<Langs> createState() => _LangsState();
 }
 
-class _InterestingIdeasState extends State<InterestingIdeas> {
-  final cont = Get.find<IdeaCont>();
+class _LangsState extends State<Langs> {
+  final cont = Get.find<LangCont>();
   bool editvisible = false;
   String chosenId = '';
+
   @override
   void initState() {
-    cont.allIdeas();
+    cont.allLangs();
     super.initState();
   }
 
@@ -27,21 +29,26 @@ class _InterestingIdeasState extends State<InterestingIdeas> {
     return Scaffold(
       backgroundColor: MyColors.mainColor,
       appBar: AppBar(
-        title: const Text('New Ideas'),
+        title: const Text('langs'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Stack(children: [
-          GetX<IdeaCont>(builder: (littleCont) {
+          GetX<LangCont>(builder: (littleCont) {
             return ListView.builder(
                 shrinkWrap: true,
-                itemCount: littleCont.interestingIdeaList.length,
+                itemCount: littleCont.langList.length,
                 itemBuilder: (c, i) {
                   return InkWell(
+                    onTap: () {
+                      Get.to(() => Lang(
+                            langname: littleCont.langList[i]['lang'],
+                            langId: littleCont.entryNames[i],
+                          ));
+                    },
                     onLongPress: () {
                       chosenId = littleCont.entryNames[i];
-                      cont.ideaTxt.text =
-                          littleCont.interestingIdeaList[i]['idea'];
+                      cont.langtxt.text = littleCont.langList[i]['lang'];
                       setState(() {
                         editvisible = true;
                       });
@@ -52,7 +59,7 @@ class _InterestingIdeasState extends State<InterestingIdeas> {
                       decoration: const BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.all(Radius.circular(15))),
-                      child: Text(littleCont.interestingIdeaList[i]['idea']),
+                      child: Text(littleCont.langList[i]['lang']),
                     ),
                   );
                 });
@@ -65,8 +72,8 @@ class _InterestingIdeasState extends State<InterestingIdeas> {
                 Visibility(
                     visible: editvisible,
                     child: Container(
-                      margin:
-                          const EdgeInsets.only(top: 10, bottom: 10, left: 10),
+                      margin: const EdgeInsets.only(
+                          top: 10, bottom: 10, left: 10, right: 0),
                       padding: const EdgeInsets.only(left: 10, right: 10),
                       decoration: BoxDecoration(
                           color: Colors.white,
@@ -79,7 +86,7 @@ class _InterestingIdeasState extends State<InterestingIdeas> {
                             SizedBox(
                               width: 200,
                               child: TextField(
-                                controller: cont.ideaTxt,
+                                controller: cont.langtxt,
                               ),
                             ),
                             const SizedBox(
@@ -87,7 +94,7 @@ class _InterestingIdeasState extends State<InterestingIdeas> {
                             ),
                             InkWell(
                               onTap: () {
-                                cont.updateIdea(chosenId);
+                                cont.updatelang(chosenId);
                                 setState(() {
                                   editvisible = false;
                                 });
@@ -101,7 +108,7 @@ class _InterestingIdeasState extends State<InterestingIdeas> {
                             const SizedBox(width: 10),
                             InkWell(
                               onTap: () {
-                                cont.deleteIdea(chosenId);
+                                cont.deletelang(chosenId);
                                 setState(() {
                                   editvisible = false;
                                 });
@@ -116,9 +123,9 @@ class _InterestingIdeasState extends State<InterestingIdeas> {
                     )),
                 InkWell(
                   onTap: () {
-                    productivityGate(context, 'what you got?', cont.ideaTxt,
+                    productivityGate(context, 'what you got?', cont.langtxt,
                         () {
-                      cont.insertIdea();
+                      cont.insertlang();
                       Navigator.of(context).pop();
                     });
                   },

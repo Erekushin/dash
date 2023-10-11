@@ -2,20 +2,13 @@ import 'package:erek_dash/dayproductivity/productivity_cont.dart';
 import 'package:erek_dash/tasks/task_cont.dart';
 import 'package:erek_dash/widgets/gates.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'dart:async';
-import 'dart:io';
-
-import 'package:permission_handler/permission_handler.dart';
 
 import 'archived_screens.dart';
 import 'boxes/boxcont.dart';
 import 'boxes/boxlist.dart';
 import 'boxes/thebox.dart';
-import 'dayproductivity/productivity_list.dart';
 import 'dayreview.dart';
-import 'gems/gem_list.dart';
 import 'habits/habit_cont.dart';
 import 'idea_stream/idea_stream_cont.dart';
 import 'globals.dart';
@@ -23,9 +16,8 @@ import 'habits/habit_list.dart';
 import 'habits/packaged_habits.dart';
 import 'idea_stream/incoming_ideas.dart';
 import 'interestingideas/idea_list.dart';
-import 'notes/notes.dart';
+import 'langs/langs.dart';
 import 'tasks/box_tasks.dart';
-import 'tasks/completed_tasks.dart';
 import 'tasks/task_gate.dart';
 import 'tasks/tasklist.dart';
 
@@ -50,6 +42,7 @@ class _DashLandingState extends State<DashLanding> {
   void initState() {
     super.initState();
     ideaStreamCont.getAllNewIdeas();
+    habitCont.allGroups();
     habitCont.getAllHabits();
     productivityCont.getCurrentDay(GlobalValues.nowStrShort);
     boxCont.allBoxes();
@@ -104,14 +97,6 @@ class _DashLandingState extends State<DashLanding> {
                               style: TextStyle(color: Colors.black),
                             )),
                         const Divider(),
-                        TextButton(
-                            onPressed: () {
-                              Get.to(() => const Gems());
-                            },
-                            child: const Text(
-                              'Gems',
-                              style: TextStyle(color: Colors.black),
-                            )),
                         const Divider(),
                         TextButton(
                             onPressed: () {
@@ -137,6 +122,15 @@ class _DashLandingState extends State<DashLanding> {
                             },
                             child: const Text(
                               'Interesting ideas',
+                              style: TextStyle(color: Colors.black),
+                            )),
+                        const Divider(),
+                        TextButton(
+                            onPressed: () {
+                              Get.to(() => const Langs());
+                            },
+                            child: const Text(
+                              'langs',
                               style: TextStyle(color: Colors.black),
                             )),
                         Orientation.landscape == true
@@ -199,17 +193,22 @@ class _DashLandingState extends State<DashLanding> {
                                   onDoubleTap: () {
                                     Get.to(() => TheBox(
                                           item: item,
+                                          id: boxContlittle.entryNames[i],
                                         ));
                                   },
                                   child: Container(
                                     width: 150,
                                     height: 120,
                                     decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                            image: FileImage(
-                                              File(item['picture']),
-                                            ),
-                                            fit: BoxFit.cover),
+                                        image: item['picture'] == ''
+                                            ? const DecorationImage(
+                                                image: AssetImage(
+                                                    'assets/images/imagedefault.png'),
+                                                fit: BoxFit.cover)
+                                            : DecorationImage(
+                                                image: NetworkImage(
+                                                    item['picture']),
+                                                fit: BoxFit.cover),
                                         color: Colors.white,
                                         borderRadius: const BorderRadius.all(
                                             Radius.circular(15))),
@@ -490,9 +489,9 @@ class _DashLandingState extends State<DashLanding> {
                               padding: const EdgeInsets.all(10),
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              itemCount: GlobalStatics.habitType.length,
+                              itemCount: habitCont.groupList.length,
                               itemBuilder: (c, i) {
-                                var item = GlobalStatics.habitType[i];
+                                var item = habitCont.groupList[i];
                                 return Padding(
                                   padding: const EdgeInsets.all(10),
                                   child: InkWell(

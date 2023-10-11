@@ -19,10 +19,10 @@ class MyColors {
 }
 
 class GlobalStatics {
-  static List habitType = [
-    {"id": 1, "name": "morning", 'upperthat': 5, "downerthat": 7},
-    {"id": 2, "name": "evening", 'upperthat': 18, "downerthat": 22},
-  ];
+  // static List habitType = [
+  //   {"id": 1, "name": "morning", 'upperthat': 5, "downerthat": 7},
+  //   {"id": 2, "name": "evening", 'upperthat': 18, "downerthat": 22},
+  // ];
 
   static List mainFunctionalities = [
     {"id": 0, "name": "incoming"},
@@ -91,18 +91,5 @@ class GlobalValues {
       _externalPath = directory!.path;
     }
     return _externalPath;
-  }
-
-  // Images path that stores images
-  static String? _imageFolderPath;
-  static Future<String> get imageFolderPath async {
-    String external = await externalPath;
-    String path = '$external/images/';
-    bool itExists = await Directory(path).exists();
-    if (!itExists) {
-      await Directory('$external/images/').create(recursive: true);
-    }
-    _imageFolderPath = '$external/images';
-    return _imageFolderPath!;
   }
 }

@@ -21,7 +21,7 @@ class _DayReviewState extends State<DayReview> {
 
   @override
   void initState() {
-    habitCont.dayHabitProgress(widget.theday);
+    // habitCont.dayHabitProgress(widget.theday);
     noteCont.getToday(widget.theday);
 
     taskCont.getDayComplitedTasks(widget.theday);

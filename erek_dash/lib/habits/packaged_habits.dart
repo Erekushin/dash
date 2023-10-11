@@ -75,10 +75,7 @@ class _PackagedHabitsState extends State<PackagedHabits> {
                       cont.finfishedtimeofHabit.text.isNotEmpty &&
                       cont.successPointofHabit.text.isNotEmpty) {
                     cont.insertHabitProgress(
-                        item.actualData,
-                        cont.stardedtimeofHabit.text,
-                        cont.finfishedtimeofHabit.text,
-                        cont.successPointofHabit.text);
+                        item.actualData['habit'], item.id.toString());
                   }
                   Navigator.of(context).pop();
                 },

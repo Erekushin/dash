@@ -46,7 +46,8 @@ class _CompletedTasksState extends State<CompletedTasks> {
                       var item = littleCont.completedList[i];
                       return InkWell(
                         onLongPress: () {
-                          chosenId = item['id'];
+                          littleCont.setValues(item);
+                          chosenId = littleCont.completedEntryNames[i];
                           editVis.value = true;
                         },
                         child: Container(

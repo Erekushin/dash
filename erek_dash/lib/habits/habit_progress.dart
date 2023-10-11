@@ -5,8 +5,9 @@ import 'habit_cont.dart';
 import '../widgets/addhabit.dart';
 
 class HabitProgress extends StatefulWidget {
-  const HabitProgress({super.key, required this.item});
+  const HabitProgress({super.key, required this.item, required this.id});
   final dynamic item;
+  final String id;
 
   @override
   State<HabitProgress> createState() => _HabitProgressState();
@@ -14,12 +15,12 @@ class HabitProgress extends StatefulWidget {
 
 class _HabitProgressState extends State<HabitProgress> {
   final cont = Get.find<HabitCont>();
-  late int chosenId;
+  late String chosenId;
 
   RxBool editVis = false.obs;
   @override
   void initState() {
-    cont.getAllProgress(widget.item['id']);
+    cont.getAllProgress(widget.id);
     super.initState();
   }
 
@@ -28,8 +29,8 @@ class _HabitProgressState extends State<HabitProgress> {
     return WillPopScope(
       onWillPop: () async {
         cont.habitTxtCnt.clear();
-        cont.stardedtimeofHabitedit.clear();
-        cont.finfishedtimeofHabitedit.clear();
+        cont.stardedtimeofHabit.clear();
+        cont.finfishedtimeofHabit.clear();
         cont.successPointofHabit.clear();
         return true;
       },
@@ -39,12 +40,12 @@ class _HabitProgressState extends State<HabitProgress> {
           actions: [
             IconButton(
                 onPressed: () {
-                  addHabit(context, false, widget.item['id']);
+                  addHabit(context, false, widget.id);
                 },
                 icon: const Icon(Icons.edit)),
             IconButton(
                 onPressed: () {
-                  cont.deleteHabit(widget.item['id']);
+                  cont.deleteHabit(widget.id);
                 },
                 icon: const Icon(Icons.delete))
           ],
@@ -84,10 +85,10 @@ class _HabitProgressState extends State<HabitProgress> {
                       return InkWell(
                         onLongPress: () {
                           editVis.value = true;
-                          chosenId = item['id'];
-                          cont.stardedtimeofHabitedit.text =
+                          chosenId = littleCont.progressEntries[i];
+                          cont.stardedtimeofHabit.text =
                               item['starting_time'].toString();
-                          cont.finfishedtimeofHabitedit.text =
+                          cont.finfishedtimeofHabit.text =
                               item['finished_time'].toString();
                           cont.successPointofHabit.text =
                               item['success_count'].toString();
@@ -124,20 +125,19 @@ class _HabitProgressState extends State<HabitProgress> {
                       children: [
                         IconButton(
                             onPressed: () {
-                              cont.deleteTaskProgress(
-                                  chosenId, widget.item['id']);
+                              cont.deleteTaskProgress(chosenId, widget.id);
                               editVis.value = false;
                             },
                             icon: const Icon(Icons.delete)),
                         IconButton(
                             onPressed: () {
                               cont.updateTaskProgress(
-                                  chosenId, widget.item['id']);
+                                  chosenId, widget.id, widget.item['habit']);
                               editVis.value = false;
                             },
                             icon: const Icon(Icons.save)),
-                        editInput('started', cont.stardedtimeofHabitedit),
-                        editInput('finished', cont.finfishedtimeofHabitedit),
+                        editInput('started', cont.stardedtimeofHabit),
+                        editInput('finished', cont.finfishedtimeofHabit),
                         editInput('success', cont.successPointofHabit)
                       ],
                     ),

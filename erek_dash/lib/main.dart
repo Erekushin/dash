@@ -5,9 +5,9 @@ import 'package:get/get.dart';
 
 import 'boxes/boxcont.dart';
 import 'dayproductivity/productivity_cont.dart';
-import 'gems/gem_cont.dart';
 import 'habits/habit_cont.dart';
 import 'interestingideas/idea_cont.dart';
+import 'langs/lang_cont.dart';
 import 'notes/note_cont.dart';
 import 'idea_stream/idea_stream_cont.dart';
 import 'globals.dart';
@@ -46,7 +46,7 @@ class ErekDash extends StatelessWidget {
     Get.put(HabitCont(), permanent: true);
     Get.put(NoteCont(), permanent: true);
     Get.put(ProductivityCont(), permanent: true);
-    Get.put(GemCont(), permanent: true);
     Get.put(IdeaCont(), permanent: true);
+    Get.put(LangCont(), permanent: true);
   }
 }

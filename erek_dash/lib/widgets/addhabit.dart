@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import '../habits/habit_cont.dart';
 import '../globals.dart';
 
-Object addHabit(BuildContext conte, bool isAdd, int id) {
+Object addHabit(BuildContext conte, bool isAdd, String id) {
   final cont = Get.find<HabitCont>();
   return showGeneralDialog(
     context: conte,
@@ -62,18 +62,18 @@ Object addHabit(BuildContext conte, bool isAdd, int id) {
                             ),
                           ),
                           const Divider(),
-                          DropdownButton<Map<String, dynamic>>(
-                              value: cont.selectedValue,
+                          DropdownButton<String>(
+                              value: cont.chosenGroup,
                               items: [
-                                for (var item in GlobalStatics.habitType)
+                                for (int i = 0; i < cont.groupList.length; i++)
                                   DropdownMenuItem(
-                                    value: item,
-                                    child: Text(item['name']),
+                                    value: cont.groupEntries[i],
+                                    child: Text(cont.groupList[i]['name']),
                                   ),
                               ],
                               onChanged: (value) {
                                 setstate(() {
-                                  cont.selectedValue = value!;
+                                  cont.chosenGroup = value!;
                                 });
                               }),
                           const Divider(),

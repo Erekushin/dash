@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'habit_cont.dart';
 import '../globals.dart';
 import '../widgets/addhabit.dart';
+import 'habit_groups.dart';
 import 'habit_progress.dart';
 
 class Habits extends StatefulWidget {
@@ -15,12 +16,26 @@ class Habits extends StatefulWidget {
 
 class _HabitsState extends State<Habits> {
   final cont = Get.find<HabitCont>();
+
+  @override
+  void initState() {
+    cont.chosenGroup = cont.groupList[0]['name'];
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: MyColors.mainColor,
       appBar: AppBar(
         title: const Text('Habits'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Get.to(() => const HabitGroups());
+              },
+              icon: const Icon(Icons.aod_sharp))
+        ],
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.all(20),
@@ -30,7 +45,7 @@ class _HabitsState extends State<Habits> {
           ),
           backgroundColor: Colors.white,
           onPressed: () {
-            addHabit(context, true, 0);
+            addHabit(context, true, '');
           },
           child: const Icon(
             Icons.add,
@@ -52,28 +67,17 @@ class _HabitsState extends State<Habits> {
                             littleCont.habitList[i]['habit'];
                         Get.to(() => HabitProgress(
                               item: littleCont.habitList[i],
+                              id: littleCont.entryNames[i],
                             ));
                       },
                       child: Container(
-                        decoration: const BoxDecoration(
-                            border: Border(
-                                bottom:
-                                    BorderSide(color: Colors.white, width: 1))),
                         margin: const EdgeInsets.all(10),
                         padding: const EdgeInsets.all(10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              littleCont.habitList[i]['habit'],
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            const Icon(
-                              Icons.arrow_right,
-                              color: Colors.white,
-                            )
-                          ],
-                        ),
+                        decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(15))),
+                        child: Text(littleCont.habitList[i]['habit']),
                       ),
                     );
                   });

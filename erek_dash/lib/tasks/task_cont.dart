@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:erek_dash/globals.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +7,19 @@ import '../idea_stream/idea_stream_cont.dart';
 import '../widgets/snacks.dart';
 
 class TaskCont extends GetxController {
+  void setValues(item) {
+    txtCnt.text = item['task'];
+    startingDate.text = item['starting_time'] ??
+        item['starting_time'].toString().substring(0, 10);
+    startingTime.text = item['starting_time'] ??
+        item['starting_time'].toString().substring(11, 16);
+    pinnedDate.text =
+        item['pinned_time'] ?? item['pinned_time'].toString().substring(0, 10);
+    pinnedTime.text =
+        item['pinned_time'] ?? item['pinned_time'].toString().substring(11, 16);
+    importancy.text = item['importancy'];
+  }
+
   Map<String, dynamic> taskValues() {
     final Map<String, dynamic> data = <String, dynamic>{};
     int speningHours = 1;
@@ -50,8 +61,14 @@ class TaskCont extends GetxController {
   List entryNames = [];
   Future getAllTask() async {
     try {
-      DatabaseEvent a =
-          await StaticHelpers.databaseReference.child(path).once();
+      Query b = StaticHelpers.databaseReference
+          .child(path)
+          .orderByChild('done_it')
+          .equalTo(
+            0,
+          );
+
+      DatabaseEvent a = await b.once();
       if (a.snapshot.exists) {
         Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
         entryNames = data.keys.toList();
@@ -133,7 +150,6 @@ class TaskCont extends GetxController {
             .child('$path/${StaticHelpers.id}')
             .set(taskValues())
             .whenComplete(() {
-          print('dfdf');
           txtCnt.clear();
           startingDate.clear();
           pinnedDate.clear();
@@ -161,6 +177,20 @@ class TaskCont extends GetxController {
     });
   }
 
+  clearValues() {
+    doneIt = 0;
+    finishedTime = '';
+    updatedTime = '';
+    int selectedLabelid = 0;
+    selectedLabelname = 'choose box';
+    txtCnt.clear();
+    importancy.clear();
+    startingDate.clear();
+    pinnedDate.clear();
+    startingTime.clear();
+    pinnedTime.clear();
+  }
+
   int doneIt = 0;
   String finishedTime = '';
   String updatedTime = '';
@@ -172,15 +202,27 @@ class TaskCont extends GetxController {
         .whenComplete(() {
       getAllTask();
       Get.back();
+      clearValues();
       Snacks.updatedSnack();
     });
   }
 
   RxList completedList = [].obs;
+  List completedEntryNames = [];
   Future getAllCompleted() async {
     try {
-      // final db = await Erekdatabase.database;
-      // completedList.value = await db.query(tableName, where: 'done_it = 1');
+      Query b = StaticHelpers.databaseReference
+          .child(path)
+          .orderByChild('done_it')
+          .equalTo(1);
+      DatabaseEvent a = await b.once();
+      if (a.snapshot.exists) {
+        Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
+        completedEntryNames = data.keys.toList();
+        completedList.value = data.values.toList();
+      } else {
+        completedList.clear();
+      }
     } catch (e) {
       Snacks.errorSnack(e);
     }
@@ -189,9 +231,25 @@ class TaskCont extends GetxController {
   RxList dayComplitedTasks = [].obs;
   Future getDayComplitedTasks(String theday) async {
     try {
-      // final db = await Erekdatabase.database;
-      // dayComplitedTasks.value = await db.query(tableName,
-      //     where: 'done_it = ? AND finished_time = ?', whereArgs: ['1', theday]);
+      Query b = StaticHelpers.databaseReference
+          .child(path)
+          .orderByChild('finished_time')
+          .equalTo(
+            theday,
+          );
+
+      DatabaseEvent a = await b.once();
+      if (a.snapshot.exists) {
+        //done it iin filter bichih
+        List c = [];
+        Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
+        c = data.values.toList();
+        print(c.toString());
+        dayComplitedTasks
+            .assignAll(c.where((element) => element['done_it'] == 1));
+
+        print(dayComplitedTasks.value.toString());
+      }
     } catch (e) {
       Snacks.errorSnack(e);
     }
