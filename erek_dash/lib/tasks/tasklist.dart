@@ -1,4 +1,4 @@
-import 'package:erek_dash/tasks/task_edit.dart';
+import 'package:erek_dash/tasks/task.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -17,7 +17,7 @@ class _TaskListState extends State<TaskList> {
   final cont = Get.find<TaskCont>();
   @override
   void initState() {
-    cont.getAll();
+    cont.getAllTask();
     super.initState();
   }
 
@@ -27,27 +27,19 @@ class _TaskListState extends State<TaskList> {
       builder: (littleCont) {
         return ListView.builder(
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: littleCont.taskListBody.value.taskList.length,
+            itemCount: littleCont.taskList.length,
             shrinkWrap: true,
             itemBuilder: (c, index) {
-              var item = littleCont.taskListBody.value.taskList[index];
+              var item = littleCont.taskList[index]['value'];
               return InkWell(
                 onTap: () {
-                  littleCont.editCnt.text = item.txt!;
-                  littleCont.editstartingDate.text = item.startingTime ??
-                      item.startingTime.toString().substring(0, 10);
-                  littleCont.editstartingTime.text = item.startingTime ??
-                      item.startingTime.toString().substring(11, 16);
-                  littleCont.editpinnedDate.text = item.pinnedTime ??
-                      item.pinnedTime.toString().substring(0, 10);
-                  littleCont.editpinnedTime.text = item.pinnedTime ??
-                      item.pinnedTime.toString().substring(11, 16);
-                  littleCont.editimportancy.text = item.importancy.toString();
+                  littleCont.setValues(item);
 
-                  Get.to(() => TaskEdit(
+                  Get.to(() => Task(
                         item: item,
-                        selectedLabelid: item.label ?? 0,
-                        selectedLabelname: item.labelname ?? '',
+                        id: cont.taskList[index]['id'],
+                        selectedLabelid: item['label'] ?? 0,
+                        selectedLabelname: item['labelname'] ?? '',
                       ));
                 },
                 child: Container(
@@ -65,7 +57,7 @@ class _TaskListState extends State<TaskList> {
                       SizedBox(
                         width: 260,
                         child: Text(
-                          item.txt!,
+                          item['task'],
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -78,7 +70,7 @@ class _TaskListState extends State<TaskList> {
                           color: Colors.black,
                         ),
                         child: Text(
-                          item.timeValue?.toString() ?? '0',
+                          item['timeValue'].toString(),
                           style: const TextStyle(
                               color: Colors.white, fontSize: 20),
                         ),

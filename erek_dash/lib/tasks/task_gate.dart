@@ -7,6 +7,7 @@ import '../helpers/time.dart';
 import '../widgets/widget_tools.dart';
 import 'task_cont.dart';
 
+// ignore: must_be_immutable
 class TaskGate extends StatefulWidget {
   TaskGate({super.key, required this.incomingIsMoving});
   bool incomingIsMoving;
@@ -57,9 +58,10 @@ class _TaskGateState extends State<TaskGate> {
               margin:
                   const EdgeInsets.only(left: 40, right: 40, top: 5, bottom: 5),
               padding: const EdgeInsets.all(10),
-              child: const TextField(
+              child: TextField(
+                controller: cont.description,
                 maxLines: null, // Set maxLines to null for multiline support
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'description... ',
                   border: InputBorder.none,
                 ),
@@ -170,13 +172,12 @@ class _TaskGateState extends State<TaskGate> {
                                                   return InkWell(
                                                     onTap: () {
                                                       setState(() {
-                                                        cont.selectedLabelname =
+                                                        cont.boxName =
                                                             boxCont.boxList[i]
                                                                 ['boxname'];
                                                       });
-                                                      cont.selectedLabelid =
-                                                          boxCont.boxList[i]
-                                                              ['id'];
+                                                      cont.boxId =
+                                                          boxCont.entryNames[i];
                                                       Get.back();
                                                     },
                                                     child: Container(
@@ -207,13 +208,62 @@ class _TaskGateState extends State<TaskGate> {
                                                 }),
                                           ));
                                     },
-                                    child: Center(
-                                        child: Text(cont.selectedLabelname))),
+                                    child: Center(child: Text(cont.boxName))),
                               )),
                           () {})
                     ],
                   )
                 ],
+              ),
+            ),
+          ],
+        )),
+      ),
+    );
+  }
+}
+
+// ignore: must_be_immutable
+class TaskGateNow extends StatefulWidget {
+  TaskGateNow({super.key});
+  @override
+  State<TaskGateNow> createState() => _TaskGateNowState();
+}
+
+class _TaskGateNowState extends State<TaskGateNow> {
+  final cont = Get.find<TaskCont>();
+  final boxCont = Get.find<BoxCont>();
+  TimeHelper timeHelper = TimeHelper();
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        await cont.insertTask(false);
+        cont.boxId = "now";
+        Get.back();
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: true, // Set this to true
+        backgroundColor: Colors.black.withOpacity(.8),
+        body: Center(
+            child: ListView(
+          shrinkWrap: true,
+          children: [
+            Container(
+              height: 80,
+              decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.all(Radius.circular(10))),
+              margin:
+                  const EdgeInsets.only(left: 40, right: 40, top: 5, bottom: 5),
+              padding: const EdgeInsets.all(10),
+              child: TextField(
+                controller: cont.txtCnt,
+                maxLines: null, // Set maxLines to null for multiline support
+                decoration: const InputDecoration(
+                  hintText: 'new task... ',
+                  border: InputBorder.none,
+                ),
               ),
             ),
           ],

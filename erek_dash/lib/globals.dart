@@ -1,10 +1,20 @@
+import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:get/get.dart';
 
-enum HomeScreenType { allTasks, boxTasks, packagedHabits }
+enum MiddleScreenType {
+  allTasks,
+  outerTasks,
+  nowTasks,
+  boxTasks,
+  packagedHabits
+}
 
 class Sizes {
   static double gWidth = Get.width;
@@ -16,10 +26,10 @@ class MyColors {
 }
 
 class GlobalStatics {
-  static List habitType = [
-    {"id": 1, "name": "morning", 'upperthat': 5, "downerthat": 7},
-    {"id": 2, "name": "evening", 'upperthat': 18, "downerthat": 22},
-  ];
+  // static List habitType = [
+  //   {"id": 1, "name": "morning", 'upperthat': 5, "downerthat": 7},
+  //   {"id": 2, "name": "evening", 'upperthat': 18, "downerthat": 22},
+  // ];
 
   static List mainFunctionalities = [
     {"id": 0, "name": "incoming"},
@@ -57,8 +67,23 @@ class Erekdatabase {
   }
 }
 
+class StaticHelpers {
+  static User? userInfo;
+  static bool darkMode = false;
+  static final DatabaseReference databaseReference =
+      FirebaseDatabase.instance.ref();
+
+  static String _id = '';
+  static String get id {
+    DateTime now = DateTime.now();
+    final int random = Random().nextInt(10);
+    _id =
+        "${now.year}${now.month}${now.day}${now.hour}${now.minute}${now.second}$random";
+    return _id;
+  }
+}
+
 class GlobalValues {
-  static HomeScreenType homeScreenType = HomeScreenType.allTasks;
   static final DateTime _now = DateTime.now();
   static String get nowStr => _now.toString();
   static String get nowStrShort => _now.toString().substring(0, 10);
@@ -72,18 +97,5 @@ class GlobalValues {
       _externalPath = directory!.path;
     }
     return _externalPath;
-  }
-
-  // Images path that stores images
-  static String? _imageFolderPath;
-  static Future<String> get imageFolderPath async {
-    String external = await externalPath;
-    String path = '$external/images/';
-    bool itExists = await Directory(path).exists();
-    if (!itExists) {
-      await Directory('$external/images/').create(recursive: true);
-    }
-    _imageFolderPath = '$external/images';
-    return _imageFolderPath!;
   }
 }

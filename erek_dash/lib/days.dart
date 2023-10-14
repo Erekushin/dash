@@ -41,12 +41,12 @@ class Days extends StatelessWidget {
     SELECT created_time FROM productivityduration WHERE created_time IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   ''';
     try {
-      final db = await Erekdatabase.database;
+      // final db = await Erekdatabase.database;
 
-      tendays.value = await db.rawQuery(
-        query,
-        [...days, ...days, ...days, ...days],
-      );
+      // tendays.value = await db.rawQuery(
+      //   query,
+      //   [...days, ...days, ...days, ...days],
+      // );
     } catch (e) {
       Snacks.errorSnack(e);
 

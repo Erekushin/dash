@@ -15,7 +15,7 @@ class InterestingIdeas extends StatefulWidget {
 class _InterestingIdeasState extends State<InterestingIdeas> {
   final cont = Get.find<IdeaCont>();
   bool editvisible = false;
-  int chosenId = 0;
+  String chosenId = '';
   @override
   void initState() {
     cont.allIdeas();
@@ -39,8 +39,8 @@ class _InterestingIdeasState extends State<InterestingIdeas> {
                 itemBuilder: (c, i) {
                   return InkWell(
                     onLongPress: () {
-                      chosenId = littleCont.interestingIdeaList[i]['id'];
-                      cont.updateTxt.text =
+                      chosenId = littleCont.entryNames[i];
+                      cont.ideaTxt.text =
                           littleCont.interestingIdeaList[i]['idea'];
                       setState(() {
                         editvisible = true;
@@ -79,7 +79,7 @@ class _InterestingIdeasState extends State<InterestingIdeas> {
                             SizedBox(
                               width: 200,
                               child: TextField(
-                                controller: cont.updateTxt,
+                                controller: cont.ideaTxt,
                               ),
                             ),
                             const SizedBox(

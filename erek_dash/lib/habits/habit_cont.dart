@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -5,8 +6,9 @@ import '../globals.dart';
 import '../widgets/snacks.dart';
 
 class CurrentHabit {
-  CurrentHabit(this.actualData, this.isDone);
+  CurrentHabit(this.actualData, this.id, this.isDone);
   dynamic actualData = {};
+  int id;
   bool isDone = false;
 }
 
@@ -15,87 +17,93 @@ class HabitCont extends GetxController {
 
   HabitCont() {
     DateTime now = DateTime(now1.year, now1.month, now1.day, now1.hour, 0, 0);
-    for (int i = 0; i < GlobalStatics.habitType.length; i++) {
-      var item = GlobalStatics.habitType[i];
+    for (int i = 0; i < groupList.length; i++) {
+      var item = groupList[i];
       if (now.hour >= item['upperthat'] && now.hour <= item['downerthat']) {
-        currentHabitTypeId = item['id'];
-        GlobalValues.homeScreenType = HomeScreenType.packagedHabits;
+        // currentHabitTypeId = item['id']; end current habit groupiig bodoj gargana
+        // GlobalValues.homeScreenType = HomeScreenType.packagedHabits;
       }
     }
   }
-  String tableName = 'habits';
+  String path = 'habit/habits';
 
   RxList habitList = [].obs;
+  List entryNames = [];
   RxList<CurrentHabit> packagedList = <CurrentHabit>[].obs;
+
+  String chosenGroupId = '';
   Future<dynamic> getAllHabits() async {
     try {
-      final db = await Erekdatabase.database;
-      habitList.value = await db.query(tableName);
-      packageHabits();
+      Query b = StaticHelpers.databaseReference
+          .child(path)
+          .orderByChild('habit_group_id')
+          .equalTo(chosenGroupId);
+      DatabaseEvent a = await b.once();
+      if (a.snapshot.exists) {
+        Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
+        entryNames = data.keys.toList();
+        habitList.value = data.values.toList();
+      } else {
+        habitList.clear();
+      }
     } catch (e) {
       Snacks.errorSnack(e);
     }
   }
 
-  int currentHabitTypeId = 0;
-  packageHabits() async {
-    packagedList.clear();
-    for (int i = 0; i < habitList.length; i++) {
-      if (habitList[i]['habit_type'] == currentHabitTypeId) {
-        bool thereNot = await checkIfThereSameProgress(habitList[i]);
-        CurrentHabit newItem;
-        newItem = CurrentHabit(habitList[i], thereNot);
-        packagedList.add(newItem);
-      }
-    }
-  }
-
   TextEditingController habitTxtCnt = TextEditingController();
-  Map<String, dynamic> selectedValue = GlobalStatics.habitType[0];
+
+  Map<String, dynamic> habitValues() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['habit'] = habitTxtCnt.text;
+    data['habit_group_id'] = chosenGroupId;
+    return data;
+  }
 
   Future insertHabit() async {
     if (habitTxtCnt.text.isNotEmpty) {
       try {
-        final db = await Erekdatabase.database;
-        db.insert(tableName,
-            {'habit': habitTxtCnt.text, "habit_type": selectedValue['id']});
-        Snacks.savedSnack();
-        habitTxtCnt.clear();
-        getAllHabits();
+        StaticHelpers.databaseReference
+            .child('$path/${StaticHelpers.id}')
+            .set(habitValues())
+            .whenComplete(() {
+          Snacks.savedSnack();
+          habitTxtCnt.clear();
+          getAllHabits();
+        });
       } catch (e) {
         Snacks.errorSnack(e);
       }
     }
   }
 
-  Future updateHabit(int id) async {
+  Future updateHabit(String id) async {
     try {
       habitTxtCnt.text = habitTxtCnt.text.trimRight();
-      final db = await Erekdatabase.database;
-      db.update(
-        tableName,
-        {'habit': habitTxtCnt.text, "habit_type": selectedValue['id']},
-        where: 'id = $id',
-      );
-
-      getAllHabits();
-      habitTxtCnt.clear();
+      StaticHelpers.databaseReference
+          .child('$path/$id')
+          .set(habitValues())
+          .whenComplete(() {
+        Snacks.savedSnack();
+        Future.delayed(const Duration(seconds: 2), () {
+          Get.back();
+        });
+        habitTxtCnt.clear();
+        getAllHabits();
+      });
     } catch (e) {
       Snacks.errorSnack(e);
     }
   }
 
-  void deleteHabit(int id) async {
+  void deleteHabit(String id) async {
     try {
-      final db = await Erekdatabase.database;
-      db.delete(tableName, where: 'id = $id');
-      getAllHabits();
-      Get.back();
-      habitTxtCnt.clear();
-
-      db.delete(progressTableName, where: 'habit_id = $id');
-
-      Snacks.deleteSnack();
+      StaticHelpers.databaseReference.child('$path/$id').remove().then((_) {
+        getAllHabits();
+        Get.back();
+        habitTxtCnt.clear();
+        Snacks.deleteSnack();
+      });
     } catch (e) {
       Snacks.errorSnack(e);
     }
@@ -103,15 +111,24 @@ class HabitCont extends GetxController {
 
 //-------------------------------------
 //habit journal ruu hiih crud vildel
-  String progressTableName = 'habits_journal';
+  String progresspath = 'habits_journal';
   RxList progressList = [].obs;
-  Future getAllProgress(int habitId) async {
+  List progressEntries = [];
+  Future getAllProgress(String habitId) async {
     try {
-      final db = await Erekdatabase.database;
-      progressList.value = await db.query(
-        progressTableName,
-        where: 'habit_id = $habitId',
-      );
+      Query b = StaticHelpers.databaseReference
+          .child(progresspath)
+          .orderByChild('habit_id')
+          .equalTo(habitId);
+      DatabaseEvent a = await b.once();
+      print('progress value ${a.snapshot.value}');
+      if (a.snapshot.exists) {
+        Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
+        progressEntries = data.keys.toList();
+        progressList.value = data.values.toList();
+      } else {
+        progressList.clear();
+      }
     } catch (e) {
       Snacks.errorSnack(e);
     }
@@ -120,21 +137,21 @@ class HabitCont extends GetxController {
   RxList dayProgress = [].obs;
   Future dayHabitProgress(String theday) async {
     try {
-      final db = await Erekdatabase.database;
-      dayProgress.value = await db
-          .query(progressTableName, where: 'day_date = ?', whereArgs: [theday]);
+      // final db = await Erekdatabase.database;
+      // dayProgress.value = await db
+      //     .query(progressTableName, where: 'day_date = ?', whereArgs: [theday]);
     } catch (e) {
       Snacks.errorSnack(e);
     }
   }
 
   List ifThere = [];
-  Future<bool> checkIfThereSameProgress(dynamic habit) async {
+  Future<bool> checkIfThereSameProgress(String habitId) async {
     try {
-      final db = await Erekdatabase.database;
-      ifThere = await db.query(progressTableName,
-          where: 'habit_id = ? AND day_date = ?',
-          whereArgs: [habit['id'], GlobalValues.nowStrShort]);
+      // final db = await Erekdatabase.database;
+      // ifThere = await db.query(progressTableName,
+      //     where: 'habit_id = ? AND day_date = ?',
+      //     whereArgs: [habit['id'], GlobalValues.nowStrShort]);
 
       return ifThere.isEmpty ? true : false;
     } catch (e) {
@@ -145,24 +162,30 @@ class HabitCont extends GetxController {
 
   TextEditingController stardedtimeofHabit = TextEditingController();
   TextEditingController finfishedtimeofHabit = TextEditingController();
-  Future insertHabitProgress(
-      dynamic habit, String starting, String finished, String success) async {
-    await checkIfThereSameProgress(habit);
+  Map<String, dynamic> habitprogressValues(String habitName, String habitId) {
+    Map<String, dynamic> data = <String, dynamic>{};
+    data['habit'] = habitName;
+    data['day_date'] = GlobalValues.nowStrShort;
+    data['starting_time'] = stardedtimeofHabit.text;
+    data['finished_time'] = finfishedtimeofHabit.text;
+    data['success_count'] = successPointofHabit.text;
+    data['habit_id'] = habitId;
+    return data;
+  }
+
+  Future insertHabitProgress(String habitName, String habitId) async {
+    await checkIfThereSameProgress(habitId);
     if (ifThere.isEmpty) {
       try {
-        final db = await Erekdatabase.database;
-        db.insert(progressTableName, {
-          'habit': habit['habit'],
-          "day_date": GlobalValues.nowStrShort,
-          "starting_time": starting,
-          "finished_time": finished,
-          "success_count": success,
-          "habit_id": habit['id']
+        StaticHelpers.databaseReference
+            .child('$progresspath/${StaticHelpers.id}')
+            .set(habitprogressValues(habitName, habitId))
+            .whenComplete(() {
+          stardedtimeofHabit.clear();
+          finfishedtimeofHabit.clear();
+          successPointofHabit.clear();
+          getAllHabits();
         });
-        stardedtimeofHabit.clear();
-        finfishedtimeofHabit.clear();
-        successPointofHabit.clear();
-        getAllHabits();
       } catch (e) {
         Snacks.errorSnack(e);
       }
@@ -171,36 +194,112 @@ class HabitCont extends GetxController {
     }
   }
 
-  TextEditingController stardedtimeofHabitedit = TextEditingController();
-  TextEditingController finfishedtimeofHabitedit = TextEditingController();
   TextEditingController successPointofHabit = TextEditingController();
-  Future updateTaskProgress(int id, int habitId) async {
+  Future updateTaskProgress(String id, String habitId, String habitname) async {
     try {
-      final db = await Erekdatabase.database;
-      db.update(
-          progressTableName,
-          {
-            'starting_time': stardedtimeofHabit.text,
-            "finished_time": finfishedtimeofHabit.text,
-            "success_count": successPointofHabit.text
-          },
-          where: 'id = $id');
-      getAllProgress(habitId);
-      stardedtimeofHabit.clear();
-      finfishedtimeofHabit.clear();
-      successPointofHabit.clear();
+      StaticHelpers.databaseReference
+          .child('$progresspath/$id')
+          .set(habitprogressValues(habitname, habitId))
+          .whenComplete(() {
+        stardedtimeofHabit.clear();
+        finfishedtimeofHabit.clear();
+        successPointofHabit.clear();
+        getAllProgress(habitId);
+      });
     } catch (e) {
       Snacks.errorSnack(e);
     }
   }
 
-  void deleteTaskProgress(int id, int habitId) async {
+  void deleteTaskProgress(String id, String habitId) async {
     try {
-      final db = await Erekdatabase.database;
-      db.delete(progressTableName, where: 'id = $id');
-      getAllProgress(habitId);
-      getAllHabits();
-      Snacks.deleteSnack();
+      StaticHelpers.databaseReference
+          .child('$progresspath/$id')
+          .remove()
+          .then((_) {
+        getAllProgress(habitId);
+        getAllHabits();
+        Snacks.deleteSnack();
+      });
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  //----------------------habit groups-----------------------
+  String groupPath = 'habit/groups';
+
+  RxList groupList = [].obs;
+  List groupEntries = [];
+  Future allGroups() async {
+    try {
+      DatabaseEvent a =
+          await StaticHelpers.databaseReference.child(groupPath).once();
+      if (a.snapshot.exists) {
+        Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
+        groupList.value = data.values.toList();
+        groupEntries = data.keys.toList();
+      } else {
+        groupList.clear();
+        groupEntries.clear();
+      }
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  Map<String, dynamic> groupValues() {
+    Map<String, dynamic> data = <String, dynamic>{};
+    data['name'] = groupTxt.text;
+    data['upperthat'] = 5;
+    data['downerthat'] = 7;
+    return data;
+  }
+
+  TextEditingController groupTxt = TextEditingController();
+  TextEditingController chosenDate = TextEditingController();
+  TextEditingController chosenTime = TextEditingController();
+  insertGroup() async {
+    try {
+      if (groupTxt.text.isNotEmpty) {
+        StaticHelpers.databaseReference
+            .child('$groupPath/${StaticHelpers.id}')
+            .set(groupValues())
+            .whenComplete(() {
+          allGroups();
+          groupTxt.clear();
+        });
+      }
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  updateGroup(String id) async {
+    try {
+      StaticHelpers.databaseReference
+          .child('$groupPath/$id')
+          .set(groupValues())
+          .whenComplete(() {
+        allGroups();
+        groupTxt.clear();
+      });
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  deleteGroup(String id) async {
+    try {
+      StaticHelpers.databaseReference
+          .child('$groupPath/$id')
+          .remove()
+          .then((_) {
+        //id aar ni habituudaas shvvj avaad ter avsan list iinhee key
+        //eer  ni davtaad ustgachih yum bna
+        getAllHabits();
+        allGroups();
+      });
     } catch (e) {
       Snacks.errorSnack(e);
     }

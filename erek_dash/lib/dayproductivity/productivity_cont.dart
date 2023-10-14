@@ -1,21 +1,31 @@
 import 'package:erek_dash/widgets/snacks.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../globals.dart';
 
 class ProductivityCont extends GetxController {
-  String tableName = 'productivityduration';
+  String path = 'productivityduration';
 
   RxList allProductivity = [].obs;
-
+  List entryNames = [];
   List<bool> expandedbool = <bool>[];
   Future getAllDay() async {
     allProductivity.clear();
+    List data = [];
 
     expandedbool.clear();
     try {
-      final db = await Erekdatabase.database;
-      List data = await db.query(tableName);
+      DatabaseEvent a =
+          await StaticHelpers.databaseReference.child(path).once();
+      if (a.snapshot.exists) {
+        Map<dynamic, dynamic> data0 = a.snapshot.value as Map<dynamic, dynamic>;
+        data = data0.values.toList();
+        entryNames = data0.keys.toList();
+      } else {
+        allProductivity.clear();
+        entryNames.clear();
+      }
 
       List littleList = [];
       String thatDate = '';
@@ -77,48 +87,70 @@ class ProductivityCont extends GetxController {
   RxList dayProductivity = [].obs;
   Future getCurrentDay(String theday) async {
     try {
-      final db = await Erekdatabase.database;
-      dayProductivity.value = await db
-          .query(tableName, where: 'created_time = ?', whereArgs: [theday]);
-    } catch (e) {
-      Snacks.errorSnack(e);
-    }
-  }
-
-  TextEditingController oneHourNote = TextEditingController();
-  insertProductivity() async {
-    try {
-      final db = await Erekdatabase.database;
-      if (oneHourNote.text.isNotEmpty) {
-        await db.insert(tableName, {
-          'created_time': GlobalValues.nowStrShort,
-          'note': oneHourNote.text
-        });
-        oneHourNote.clear();
-        getCurrentDay(GlobalValues.nowStrShort);
+      Query b = StaticHelpers.databaseReference
+          .child(path)
+          .orderByChild('created_time')
+          .equalTo(theday);
+      DatabaseEvent a = await b.once();
+      if (a.snapshot.exists) {
+        Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
+        dayProductivity.value = data.values.toList();
+        entryNames = data.keys.toList();
+      } else {
+        dayProductivity.clear();
+        entryNames.clear();
       }
     } catch (e) {
       Snacks.errorSnack(e);
     }
   }
 
-  TextEditingController editTxt = TextEditingController();
-  updateProductivity(int id) async {
+  Map<String, dynamic> productivityValues() {
+    Map<String, dynamic> data = <String, dynamic>{};
+    data['note'] = oneHourNote.text;
+    data['created_time'] = GlobalValues.nowStrShort;
+    return data;
+  }
+
+  TextEditingController oneHourNote = TextEditingController();
+  insertProductivity() async {
     try {
-      final db = await Erekdatabase.database;
-      db.update(tableName, {'note': editTxt.text}, where: 'id = $id');
-      getAllDay();
+      if (oneHourNote.text.isNotEmpty) {
+        StaticHelpers.databaseReference
+            .child('$path/${StaticHelpers.id}')
+            .set(productivityValues())
+            .whenComplete(() {
+          oneHourNote.clear();
+          getCurrentDay(GlobalValues.nowStrShort);
+        });
+      }
     } catch (e) {
       Snacks.errorSnack(e);
     }
   }
 
-  deleteProductivity(int id) async {
+  updateProductivity(String id) async {
     try {
-      final db = await Erekdatabase.database;
-      db.delete(tableName, where: 'id = $id');
-      getAllDay();
-      getCurrentDay(GlobalValues.nowStrShort);
+      if (oneHourNote.text.isNotEmpty) {
+        StaticHelpers.databaseReference
+            .child('$path/$id')
+            .set(productivityValues())
+            .whenComplete(() {
+          oneHourNote.clear();
+          getAllDay();
+        });
+      }
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  deleteProductivity(String id) async {
+    try {
+      StaticHelpers.databaseReference.child('$path/$id').remove().then((_) {
+        getAllDay();
+        getCurrentDay(GlobalValues.nowStrShort);
+      });
     } catch (e) {
       Snacks.errorSnack(e);
     }

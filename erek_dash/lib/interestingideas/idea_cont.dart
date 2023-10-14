@@ -1,58 +1,76 @@
 import 'package:erek_dash/globals.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../widgets/snacks.dart';
 
 class IdeaCont extends GetxController {
-  String tableName = 'newIdeas';
+  String path = 'newIdeas';
 
   RxList interestingIdeaList = [].obs;
+  List entryNames = [];
   Future allIdeas() async {
     try {
-      final db = await Erekdatabase.database;
-      interestingIdeaList.value = await db.query(tableName);
-    } catch (e) {
-      Snacks.errorSnack(e);
-    }
-  }
-
-  TextEditingController ideaTxt = TextEditingController();
-  insertIdea() async {
-    try {
-      final db = await Erekdatabase.database;
-      if (ideaTxt.text.isNotEmpty) {
-        db.insert(tableName, {
-          'idea': ideaTxt.text,
-          'created_time': GlobalValues.nowStrShort,
-          'updated_time': GlobalValues.nowStr
-        });
-        allIdeas();
-        ideaTxt.clear();
+      DatabaseEvent a =
+          await StaticHelpers.databaseReference.child(path).once();
+      if (a.snapshot.exists) {
+        Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
+        interestingIdeaList.value = data.values.toList();
+        entryNames = data.keys.toList();
+      } else {
+        interestingIdeaList.clear();
+        entryNames.clear();
       }
     } catch (e) {
       Snacks.errorSnack(e);
     }
   }
 
-  TextEditingController updateTxt = TextEditingController();
-  updateIdea(int id) async {
+  Map<String, dynamic> ideaValues() {
+    Map<String, dynamic> data = <String, dynamic>{};
+    data['idea'] = ideaTxt.text;
+    data['created_time'] = GlobalValues.nowStrShort;
+    data['updated_time'] = GlobalValues.nowStr;
+    return data;
+  }
+
+  TextEditingController ideaTxt = TextEditingController();
+  insertIdea() async {
     try {
-      final db = await Erekdatabase.database;
-      db.update(tableName,
-          {'idea': updateTxt.text, 'updated_time': GlobalValues.nowStr},
-          where: 'id = $id');
-      allIdeas();
+      if (ideaTxt.text.isNotEmpty) {
+        StaticHelpers.databaseReference
+            .child('$path/${StaticHelpers.id}')
+            .set(ideaValues())
+            .whenComplete(() {
+          allIdeas();
+          ideaTxt.clear();
+        });
+      }
     } catch (e) {
       Snacks.errorSnack(e);
     }
   }
 
-  deleteIdea(int id) async {
+  updateIdea(String id) async {
     try {
-      final db = await Erekdatabase.database;
-      db.delete(tableName, where: 'id = $id');
-      allIdeas();
+      StaticHelpers.databaseReference
+          .child('$path/$id')
+          .set(ideaValues())
+          .whenComplete(() {
+        allIdeas();
+        ideaTxt.clear();
+      });
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  deleteIdea(String id) async {
+    try {
+      StaticHelpers.databaseReference.child('$path/$id').remove().then((_) {
+        allIdeas();
+      });
     } catch (e) {
       Snacks.errorSnack(e);
     }

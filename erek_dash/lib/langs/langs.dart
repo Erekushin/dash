@@ -3,22 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../widgets/gates.dart';
-import 'gem_cont.dart';
+import 'lang.dart';
+import 'lang_cont.dart';
 
-class Gems extends StatefulWidget {
-  const Gems({super.key});
+class Langs extends StatefulWidget {
+  const Langs({super.key});
 
   @override
-  State<Gems> createState() => _GemsState();
+  State<Langs> createState() => _LangsState();
 }
 
-class _GemsState extends State<Gems> {
-  final cont = Get.find<GemCont>();
+class _LangsState extends State<Langs> {
+  final cont = Get.find<LangCont>();
   bool editvisible = false;
-  int chosenId = 0;
+  String chosenId = '';
+
   @override
   void initState() {
-    cont.allGems();
+    cont.allLangs();
     super.initState();
   }
 
@@ -27,20 +29,26 @@ class _GemsState extends State<Gems> {
     return Scaffold(
       backgroundColor: MyColors.mainColor,
       appBar: AppBar(
-        title: const Text('Gems'),
+        title: const Text('langs'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Stack(children: [
-          GetX<GemCont>(builder: (littleCont) {
+          GetX<LangCont>(builder: (littleCont) {
             return ListView.builder(
                 shrinkWrap: true,
-                itemCount: littleCont.gemList.length,
+                itemCount: littleCont.langList.length,
                 itemBuilder: (c, i) {
                   return InkWell(
+                    onTap: () {
+                      Get.to(() => Lang(
+                            langname: littleCont.langList[i]['lang'],
+                            langId: littleCont.entryNames[i],
+                          ));
+                    },
                     onLongPress: () {
-                      chosenId = littleCont.gemList[i]['id'];
-                      cont.updateTxt.text = littleCont.gemList[i]['gem'];
+                      chosenId = littleCont.entryNames[i];
+                      cont.langtxt.text = littleCont.langList[i]['lang'];
                       setState(() {
                         editvisible = true;
                       });
@@ -51,7 +59,7 @@ class _GemsState extends State<Gems> {
                       decoration: const BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.all(Radius.circular(15))),
-                      child: Text(littleCont.gemList[i]['gem']),
+                      child: Text(littleCont.langList[i]['lang']),
                     ),
                   );
                 });
@@ -64,8 +72,8 @@ class _GemsState extends State<Gems> {
                 Visibility(
                     visible: editvisible,
                     child: Container(
-                      margin:
-                          const EdgeInsets.only(top: 10, bottom: 10, left: 10),
+                      margin: const EdgeInsets.only(
+                          top: 10, bottom: 10, left: 10, right: 0),
                       padding: const EdgeInsets.only(left: 10, right: 10),
                       decoration: BoxDecoration(
                           color: Colors.white,
@@ -78,7 +86,7 @@ class _GemsState extends State<Gems> {
                             SizedBox(
                               width: 200,
                               child: TextField(
-                                controller: cont.updateTxt,
+                                controller: cont.langtxt,
                               ),
                             ),
                             const SizedBox(
@@ -86,7 +94,7 @@ class _GemsState extends State<Gems> {
                             ),
                             InkWell(
                               onTap: () {
-                                cont.updateGem(chosenId);
+                                cont.updatelang(chosenId);
                                 setState(() {
                                   editvisible = false;
                                 });
@@ -100,7 +108,7 @@ class _GemsState extends State<Gems> {
                             const SizedBox(width: 10),
                             InkWell(
                               onTap: () {
-                                cont.deleteGem(chosenId);
+                                cont.deletelang(chosenId);
                                 setState(() {
                                   editvisible = false;
                                 });
@@ -115,9 +123,9 @@ class _GemsState extends State<Gems> {
                     )),
                 InkWell(
                   onTap: () {
-                    productivityGate(context, 'what you learned ?', cont.gemTxt,
+                    productivityGate(context, 'what you got?', cont.langtxt,
                         () {
-                      cont.insertGem();
+                      cont.insertlang();
                       Navigator.of(context).pop();
                     });
                   },

@@ -15,7 +15,7 @@ class Notes extends StatefulWidget {
 class _NotesState extends State<Notes> with TickerProviderStateMixin {
   final cont = Get.find<NoteCont>();
   bool editvisible = false;
-  int chosenId = 0;
+  String chosenId = '';
   @override
   void initState() {
     cont.getAll();
@@ -43,7 +43,7 @@ class _NotesState extends State<Notes> with TickerProviderStateMixin {
                       var item = littleCont.notes[i];
                       return InkWell(
                         onLongPress: () {
-                          chosenId = item['id'];
+                          chosenId = littleCont.entryNames[i];
                           setState(() {
                             editvisible = true;
                           });

@@ -1,1 +1,0 @@
-create table idea_stream (id integer primary key autoincrement, incoming_idea varchar(500), created_time date, updated_time date)

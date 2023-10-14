@@ -41,7 +41,7 @@ class InfoEdit extends StatelessWidget {
                     Expanded(
                       flex: 8,
                       child: TextField(
-                        controller: cont.ideaEditorCont,
+                        controller: cont.ideaTxtCnt,
                         maxLines:
                             null, // Set maxLines to null for multiline support
                         decoration: const InputDecoration(
@@ -89,14 +89,14 @@ class InfoEdit extends StatelessWidget {
                                       switch (value) {
                                         case 'note':
                                           noteCont.notetxt.text =
-                                              cont.ideaEditorCont.text;
+                                              cont.ideaTxtCnt.text;
                                           Get.off(() => NoteGate(
                                                 incomingIsMoving: true,
                                               ));
                                           break;
                                         case 'task':
                                           taskCont.txtCnt.text =
-                                              cont.ideaEditorCont.text;
+                                              cont.ideaTxtCnt.text;
                                           Get.off(() => TaskGate(
                                                 incomingIsMoving: true,
                                               ));

@@ -13,7 +13,7 @@ class ProductivityList extends StatefulWidget {
 class _ProductivityListState extends State<ProductivityList> {
   final cont = Get.find<ProductivityCont>();
   bool editvisible = false;
-  int chosenId = 0;
+  String chosenId = '';
   @override
   void initState() {
     cont.getAllDay();
@@ -95,8 +95,8 @@ class _ProductivityListState extends State<ProductivityList> {
                                               },
                                               onLongPress: () {
                                                 chosenId =
-                                                    innerItems[index]['id'];
-                                                cont.editTxt.text =
+                                                    littleCont.entryNames[i];
+                                                cont.oneHourNote.text =
                                                     innerItems[index]['note'];
                                                 setState(() {
                                                   editvisible = true;
@@ -162,7 +162,7 @@ class _ProductivityListState extends State<ProductivityList> {
                           SizedBox(
                             width: 250,
                             child: TextField(
-                              controller: cont.editTxt,
+                              controller: cont.oneHourNote,
                             ),
                           ),
                           const SizedBox(

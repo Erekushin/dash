@@ -26,11 +26,12 @@ class _IncomingIdeasState extends State<IncomingIdeas> {
             itemBuilder: (context, index) {
               return InkWell(
                 onTap: () {
-                  littleCont.ideaEditorCont.text =
+                  littleCont.ideaTxtCnt.text =
                       littleCont.ideaList[index]['incoming_idea'];
                   littleCont.firstValue =
                       littleCont.ideaList[index]['incoming_idea'];
-                  Get.to(() => InfoEdit(id: littleCont.ideaList[index]['id']));
+                  Get.to(() =>
+                      InfoEdit(id: int.parse(littleCont.entryNames[index])));
                 },
                 child: Container(
                   margin: const EdgeInsets.all(10),

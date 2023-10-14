@@ -8,33 +8,16 @@ import 'boxcont.dart';
 
 // ignore: must_be_immutable
 class TheBox extends StatefulWidget {
-  TheBox({super.key, required this.item});
+  TheBox({super.key, required this.item, required this.id});
   // ignore: prefer_typing_uninitialized_variables
   var item;
+  String id;
   @override
   State<TheBox> createState() => _TheBoxState();
 }
 
 class _TheBoxState extends State<TheBox> {
   final cont = Get.find<BoxCont>();
-
-  void deleteFile(String filePath) async {
-    try {
-      File file = File(filePath);
-
-      if (await file.exists()) {
-        await file.delete();
-        print('File deleted successfully');
-        cont.deleteBox(widget.item['id']);
-        Get.back();
-      } else {
-        print('File not found');
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +26,11 @@ class _TheBoxState extends State<TheBox> {
         actions: [
           IconButton(
               onPressed: () {
-                deleteFile(widget.item['picture']);
+                if (widget.item['picture'] != '') {
+                  cont.deleteImageFromStorage(widget.item['picture']);
+                }
+
+                cont.deleteBox(widget.id);
               },
               icon: const Icon(Icons.delete))
         ],
@@ -54,11 +41,13 @@ class _TheBoxState extends State<TheBox> {
             height: 300,
             width: double.infinity,
             decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: FileImage(
-                    File(widget.item['picture']),
-                  ),
-                  fit: BoxFit.cover),
+              image: widget.item['picture'] == ''
+                  ? const DecorationImage(
+                      image: AssetImage('assets/images/imagedefault.png'),
+                      fit: BoxFit.cover)
+                  : DecorationImage(
+                      image: NetworkImage(widget.item['picture']),
+                      fit: BoxFit.cover),
             ),
           ),
           const SizedBox(
