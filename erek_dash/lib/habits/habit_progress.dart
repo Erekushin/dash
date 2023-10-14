@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'habit_cont.dart';
-import '../widgets/addhabit.dart';
+import 'habit_list.dart';
 
 class HabitProgress extends StatefulWidget {
   const HabitProgress({super.key, required this.item, required this.id});

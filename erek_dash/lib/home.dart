@@ -10,14 +10,13 @@ import 'boxes/boxlist.dart';
 import 'boxes/thebox.dart';
 import 'dayreview.dart';
 import 'habits/habit_cont.dart';
+import 'habits/habit_groups.dart';
 import 'idea_stream/idea_stream_cont.dart';
 import 'globals.dart';
-import 'habits/habit_list.dart';
 import 'habits/packaged_habits.dart';
 import 'idea_stream/incoming_ideas.dart';
 import 'interestingideas/idea_list.dart';
 import 'langs/langs.dart';
-import 'tasks/box_tasks.dart';
 import 'tasks/task_gate.dart';
 import 'tasks/tasklist.dart';
 
@@ -36,7 +35,8 @@ class _DashLandingState extends State<DashLanding> {
   final boxCont = Get.find<BoxCont>();
 
   GlobalKey<ScaffoldState> menuSidebarKey = GlobalKey<ScaffoldState>();
-  String homeTitle = 'Erek dash ';
+
+  String homeTitle = 'Erek dash';
 
   @override
   void initState() {
@@ -109,7 +109,7 @@ class _DashLandingState extends State<DashLanding> {
                         const Divider(),
                         TextButton(
                             onPressed: () {
-                              Get.to(() => const Habits());
+                              Get.to(() => const HabitGroups());
                             },
                             child: const Text(
                               'habits',
@@ -151,9 +151,7 @@ class _DashLandingState extends State<DashLanding> {
                           child: const Text('charge up'),
                         ),
                         TextButton(
-                            onPressed: () {
-                              configuration(context);
-                            },
+                            onPressed: () {},
                             child: const Text(
                               'configurations',
                               style: TextStyle(color: Colors.black),
@@ -167,217 +165,285 @@ class _DashLandingState extends State<DashLanding> {
             children: [
               SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
-                child: SizedBox(
-                  width: Sizes.gWidth,
-                  height: Sizes.gHeight - 150,
-                  child: Column(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: GetX<BoxCont>(builder: (boxContlittle) {
-                          return ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              shrinkWrap: true,
-                              itemCount: boxContlittle.boxList.length,
-                              itemBuilder: (c, i) {
-                                var item = boxContlittle.boxList[i];
-                                String name = item['boxname'];
-                                return InkWell(
-                                  onTap: () {
-                                    taskCont.getBoxTasks(item['id']);
-                                    setState(() {
-                                      GlobalValues.homeScreenType =
-                                          HomeScreenType.boxTasks;
-                                    });
-                                  },
-                                  onDoubleTap: () {
-                                    Get.to(() => TheBox(
-                                          item: item,
-                                          id: boxContlittle.entryNames[i],
-                                        ));
-                                  },
-                                  child: Container(
-                                    width: 150,
-                                    height: 120,
-                                    decoration: BoxDecoration(
-                                        image: item['picture'] == ''
-                                            ? const DecorationImage(
-                                                image: AssetImage(
-                                                    'assets/images/imagedefault.png'),
-                                                fit: BoxFit.cover)
-                                            : DecorationImage(
-                                                image: NetworkImage(
-                                                    item['picture']),
-                                                fit: BoxFit.cover),
-                                        color: Colors.white,
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(15))),
-                                    margin: const EdgeInsets.all(10),
-                                    child: Align(
-                                      alignment: Alignment.bottomLeft,
-                                      child: Container(
-                                        margin: const EdgeInsets.all(7),
-                                        padding: const EdgeInsets.all(5),
-                                        decoration: const BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(5))),
-                                        child: Text(
-                                          item['boxname'],
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold),
+                child: GetX<TaskCont>(builder: (taskLittleCont) {
+                  return SizedBox(
+                    width: Sizes.gWidth,
+                    height: Sizes.gHeight - 150,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: GetX<BoxCont>(builder: (boxContlittle) {
+                            return ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                shrinkWrap: true,
+                                itemCount: boxContlittle.boxList.length,
+                                itemBuilder: (c, i) {
+                                  var item = boxContlittle.boxList[i];
+                                  return InkWell(
+                                    onTap: () {
+                                      taskCont.boxId =
+                                          boxContlittle.entryNames[i];
+                                      taskCont.boxName =
+                                          boxContlittle.boxList[i]['boxname'];
+                                      taskCont.getBoxTasks(
+                                          boxContlittle.entryNames[i]);
+                                      taskLittleCont.homeMiddleAreaType.value =
+                                          boxContlittle.entryNames[i];
+                                    },
+                                    onDoubleTap: () {
+                                      Get.to(() => TheBox(
+                                            item: item,
+                                            id: boxContlittle.entryNames[i],
+                                          ));
+                                    },
+                                    child: Container(
+                                      width: 150,
+                                      height: 120,
+                                      decoration: BoxDecoration(
+                                          image: item['picture'] == ''
+                                              ? const DecorationImage(
+                                                  image: AssetImage(
+                                                      'assets/images/imagedefault.png'),
+                                                  fit: BoxFit.cover)
+                                              : DecorationImage(
+                                                  image: NetworkImage(
+                                                      item['picture']),
+                                                  fit: BoxFit.cover),
+                                          color: Colors.white,
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(15))),
+                                      margin: const EdgeInsets.all(10),
+                                      child: Align(
+                                        alignment: Alignment.bottomLeft,
+                                        child: Container(
+                                          margin: const EdgeInsets.all(7),
+                                          padding: const EdgeInsets.all(5),
+                                          decoration: const BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(5))),
+                                          child: Text(
+                                            item['boxname'],
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              });
-                        }),
-                      ),
-                      const Divider(
-                        color: Colors.white,
-                      ),
-                      Row(children: [
-                        Expanded(
-                          flex: 6,
-                          child: Container(
-                            margin: const EdgeInsets.all(10),
-                            height: 50,
-                            decoration: const BoxDecoration(
-                                color: Colors.black,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(15))),
-                            child: InkWell(
-                              onTap: () {
-                                Get.to(() => TaskGate(
-                                      incomingIsMoving: false,
-                                    ));
-                              },
-                              child: Center(child: GetX<TaskCont>(
-                                builder: (littleCont) {
-                                  return Text(
-                                    'there is ${littleCont.taskList.length} tasks in total / add here...',
-                                    style: const TextStyle(color: Colors.white),
                                   );
-                                },
-                              )),
-                            ),
-                          ),
+                                });
+                          }),
                         ),
-                        Expanded(
-                          flex: 1,
-                          child: InkWell(
-                            onTap: () {
-                              setState(() {
-                                GlobalValues.homeScreenType =
-                                    HomeScreenType.allTasks;
-                              });
-                            },
+                        const Divider(
+                          color: Colors.white,
+                        ),
+                        Row(children: [
+                          Expanded(
+                            flex: 4,
                             child: Container(
-                              alignment: Alignment.center,
+                              margin: const EdgeInsets.all(10),
                               height: 50,
                               decoration: const BoxDecoration(
                                   color: Colors.black,
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(15))),
-                              child: const Text(
-                                'all',
-                                style: TextStyle(color: Colors.white),
+                              child: InkWell(
+                                onTap: () {
+                                  if (taskLittleCont.homeMiddleAreaType.value ==
+                                      "now") {
+                                    Get.to(() => TaskGateNow());
+                                  } else {
+                                    Get.to(() => TaskGate(
+                                          incomingIsMoving: false,
+                                        ));
+                                  }
+                                },
+                                child: Center(child: GetX<TaskCont>(
+                                  builder: (littleCont) {
+                                    return Text(
+                                      'there is ${littleCont.taskList.length} tasks',
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    );
+                                  },
+                                )),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        )
-                      ]),
-                      Expanded(
-                          flex: 7,
-                          child: SingleChildScrollView(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                GlobalValues.homeScreenType ==
-                                        HomeScreenType.allTasks
-                                    ? const TaskList()
-                                    : const SizedBox(),
-                                GlobalValues.homeScreenType ==
-                                        HomeScreenType.boxTasks
-                                    ? const BoxTask()
-                                    : const SizedBox(),
-                                GlobalValues.homeScreenType ==
-                                        HomeScreenType.packagedHabits
-                                    ? const PackagedHabits()
-                                    : const SizedBox()
-                              ],
+                          Expanded(
+                            flex: 1,
+                            child: InkWell(
+                              onTap: () {
+                                taskCont.clearValues();
+                                taskCont.getBoxTasks('now');
+                                taskLittleCont.homeMiddleAreaType.value = 'now';
+                              },
+                              child: Container(
+                                alignment: Alignment.center,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                    color: taskLittleCont
+                                                .homeMiddleAreaType.value ==
+                                            "now"
+                                        ? const Color.fromARGB(255, 57, 19, 161)
+                                        : Colors.black,
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(15))),
+                                child: const Text(
+                                  'now',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
                             ),
-                          )),
-                      Expanded(
-                        flex: 1,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 8,
-                              child: InkWell(
-                                onTap: () {
-                                  ideaGate(context);
-                                },
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(15))),
-                                  margin: const EdgeInsets.all(10),
-                                  child: Center(
-                                    child: GetX<IdeaStreamCont>(
-                                      builder: (littleCont) {
-                                        return Text(
-                                          '${littleCont.ideaList.length} incomings / Write here... ',
-                                          style: const TextStyle(
-                                              color: Colors.white),
-                                        );
-                                      },
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: InkWell(
+                              onTap: () {
+                                taskCont.clearValues();
+                                taskCont.getBoxTasks('');
+                                taskLittleCont.homeMiddleAreaType.value =
+                                    'outer';
+                              },
+                              child: Container(
+                                alignment: Alignment.center,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                    color: taskLittleCont
+                                                .homeMiddleAreaType.value ==
+                                            "outer"
+                                        ? const Color.fromARGB(255, 57, 19, 161)
+                                        : Colors.black,
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(15))),
+                                child: const Text(
+                                  'outer',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: InkWell(
+                              onTap: () {
+                                taskCont.clearValues();
+                                taskCont.getAllTask();
+
+                                taskLittleCont.homeMiddleAreaType.value =
+                                    'allTasks';
+                              },
+                              child: Container(
+                                alignment: Alignment.center,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                    color: taskLittleCont
+                                                .homeMiddleAreaType.value ==
+                                            "allTasks"
+                                        ? const Color.fromARGB(255, 57, 19, 161)
+                                        : Colors.black,
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(15))),
+                                child: const Text(
+                                  'all',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          )
+                        ]),
+                        Expanded(
+                            flex: 7,
+                            child: SingleChildScrollView(
+                              child: taskLittleCont.homeMiddleAreaType.value ==
+                                          'allTasks' ||
+                                      taskLittleCont.homeMiddleAreaType.value ==
+                                          'outer' ||
+                                      taskLittleCont.homeMiddleAreaType.value ==
+                                          'now'
+                                  ? const TaskList()
+                                  : taskLittleCont.homeMiddleAreaType.value ==
+                                          'packagedHabits'
+                                      ? const PackagedHabits()
+                                      : const TaskList(),
+                            )),
+                        Expanded(
+                          flex: 1,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 8,
+                                child: InkWell(
+                                  onTap: () {
+                                    ideaGate(context);
+                                  },
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(15))),
+                                    margin: const EdgeInsets.all(10),
+                                    child: Center(
+                                      child: GetX<IdeaStreamCont>(
+                                        builder: (littleCont) {
+                                          return Text(
+                                            '${littleCont.ideaList.length} incomings / Write here... ',
+                                            style: const TextStyle(
+                                                color: Colors.white),
+                                          );
+                                        },
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            Expanded(
-                              flex: 3,
-                              child: InkWell(
-                                onTap: () {
-                                  productivityGate(
-                                      context,
-                                      'what have you done?',
-                                      productivityCont.oneHourNote, () {
-                                    productivityCont.insertProductivity();
-                                    Navigator.of(context).pop();
-                                  });
-                                },
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(15))),
-                                  margin: const EdgeInsets.all(10),
-                                  child: Center(child: GetX<ProductivityCont>(
-                                      builder: (productivityCont) {
-                                    return Text(
-                                      productivityCont.dayProductivity.length
-                                          .toString(),
-                                      style: const TextStyle(
-                                          color: Colors.white, fontSize: 25),
-                                    );
-                                  })),
+                              Expanded(
+                                flex: 3,
+                                child: InkWell(
+                                  onTap: () {
+                                    productivityGate(
+                                        context,
+                                        'what have you done?',
+                                        productivityCont.oneHourNote, () {
+                                      productivityCont.insertProductivity();
+                                      Navigator.of(context).pop();
+                                    });
+                                  },
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(15))),
+                                    margin: const EdgeInsets.all(10),
+                                    child: Center(child: GetX<ProductivityCont>(
+                                        builder: (productivityCont) {
+                                      return Text(
+                                        productivityCont.dayProductivity.length
+                                            .toString(),
+                                        style: const TextStyle(
+                                            color: Colors.white, fontSize: 25),
+                                      );
+                                    })),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  );
+                }),
               ),
               const IncomingIdeas()
             ],
@@ -451,73 +517,6 @@ class _DashLandingState extends State<DashLanding> {
       barrierColor: const Color.fromARGB(133, 0, 0, 0),
       pageBuilder: (conte, anim1, anim2) {
         return Container();
-      },
-    );
-  }
-
-  Object configuration(BuildContext conte) {
-    return showGeneralDialog(
-      context: conte,
-      barrierDismissible: true,
-      barrierLabel: MaterialLocalizations.of(conte).modalBarrierDismissLabel,
-      barrierColor: const Color.fromARGB(133, 0, 0, 0),
-      pageBuilder: (conte, anim1, anim2) {
-        return StatefulBuilder(
-          builder: (conte, setstate) {
-            return SafeArea(
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
-                child: Scaffold(
-                  resizeToAvoidBottomInset: true, // Set this to true
-                  backgroundColor: Colors.black.withOpacity(.8),
-                  body: Center(
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        Container(
-                          height: 400,
-                          decoration: const BoxDecoration(
-                              color: Colors.white,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10))),
-                          margin: const EdgeInsets.only(
-                              left: 40, right: 40, top: 5, bottom: 5),
-                          padding: const EdgeInsets.all(10),
-                          child: ListView.builder(
-                              padding: const EdgeInsets.all(10),
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: habitCont.groupList.length,
-                              itemBuilder: (c, i) {
-                                var item = habitCont.groupList[i];
-                                return Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: InkWell(
-                                    onTap: () {
-                                      habitCont.currentHabitTypeId = item['id'];
-                                      habitCont.packageHabits();
-                                      GlobalValues.homeScreenType =
-                                          HomeScreenType.packagedHabits;
-                                      homeTitle = item['name'];
-                                      setState(() {});
-                                    },
-                                    child: Container(
-                                        margin: const EdgeInsets.all(10),
-                                        child: Text(item['name'])),
-                                  ),
-                                );
-                              }),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
       },
     );
   }

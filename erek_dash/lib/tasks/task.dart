@@ -9,8 +9,9 @@ import '../helpers/time.dart';
 import '../widgets/buttons.dart';
 import '../widgets/widget_tools.dart';
 
-class TaskEdit extends StatefulWidget {
-  TaskEdit(
+// ignore: must_be_immutable
+class Task extends StatefulWidget {
+  Task(
       {super.key,
       required this.item,
       required this.id,
@@ -21,10 +22,10 @@ class TaskEdit extends StatefulWidget {
   String selectedLabelname;
   int selectedLabelid;
   @override
-  State<TaskEdit> createState() => _TaskEditState();
+  State<Task> createState() => _TaskState();
 }
 
-class _TaskEditState extends State<TaskEdit> {
+class _TaskState extends State<Task> {
   final cont = Get.find<TaskCont>();
   final boxCont = Get.find<BoxCont>();
 

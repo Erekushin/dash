@@ -1,9 +1,13 @@
 import 'package:erek_dash/globals.dart';
+import 'package:erek_dash/tasks/task_cont.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../widgets/gates.dart';
+import '../helpers/time.dart';
+import '../widgets/snacks.dart';
+import '../widgets/widget_tools.dart';
 import 'habit_cont.dart';
+import 'habit_list.dart';
 
 class HabitGroups extends StatefulWidget {
   const HabitGroups({super.key});
@@ -14,8 +18,9 @@ class HabitGroups extends StatefulWidget {
 
 class _HabitGroupsState extends State<HabitGroups> {
   final cont = Get.find<HabitCont>();
+  final taskCont = Get.find<TaskCont>();
   bool editvisible = false;
-  String chosenId = '';
+
   @override
   void initState() {
     cont.allGroups();
@@ -38,9 +43,14 @@ class _HabitGroupsState extends State<HabitGroups> {
                 itemCount: littleCont.groupList.length,
                 itemBuilder: (c, i) {
                   return InkWell(
+                      onTap: () {
+                        littleCont.chosenGroupId = littleCont.groupEntries[i];
+
+                        Get.to(() => const Habits());
+                      },
                       onLongPress: () {
-                        chosenId = littleCont.entryNames[i];
-                        cont.gemTxt.text = littleCont.groupList[i]['gem'];
+                        littleCont.chosenGroupId = littleCont.groupEntries[i];
+                        cont.groupTxt.text = littleCont.groupList[i]['name'];
                         setState(() {
                           editvisible = true;
                         });
@@ -87,10 +97,37 @@ class _HabitGroupsState extends State<HabitGroups> {
                       child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
+                            InkWell(
+                              onTap: () async {
+                                await cont.getAllHabits();
+                                cont.packagedList.clear();
+                                for (int i = 0;
+                                    i < cont.habitList.length;
+                                    i++) {
+                                  cont.packagedList.add(CurrentHabit(
+                                      cont.habitList[i], 0, false));
+                                }
+
+                                taskCont.homeMiddleAreaType.value =
+                                    'packagedHabits';
+
+                                Get.back();
+                                Get.back();
+                                Snacks.freeSnack(cont.groupTxt.text);
+                              },
+                              child: const Icon(
+                                Icons.adjust_sharp,
+                                color: Colors.blueAccent,
+                                size: 30,
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
                             SizedBox(
-                              width: 200,
+                              width: 165,
                               child: TextField(
-                                controller: cont.gemTxt,
+                                controller: cont.groupTxt,
                               ),
                             ),
                             const SizedBox(
@@ -98,7 +135,7 @@ class _HabitGroupsState extends State<HabitGroups> {
                             ),
                             InkWell(
                               onTap: () {
-                                cont.updateGroup(chosenId);
+                                cont.updateGroup(cont.chosenGroupId);
                                 setState(() {
                                   editvisible = false;
                                 });
@@ -112,7 +149,7 @@ class _HabitGroupsState extends State<HabitGroups> {
                             const SizedBox(width: 10),
                             InkWell(
                               onTap: () {
-                                cont.deleteGroup(chosenId);
+                                cont.deleteGroup(cont.chosenGroupId);
                                 setState(() {
                                   editvisible = false;
                                 });
@@ -127,8 +164,7 @@ class _HabitGroupsState extends State<HabitGroups> {
                     )),
                 InkWell(
                   onTap: () {
-                    productivityGate(context, 'what you learned ?', cont.gemTxt,
-                        () {
+                    habitGroupGate(context, cont.groupTxt, () {
                       cont.insertGroup();
                       Navigator.of(context).pop();
                     });
@@ -155,4 +191,126 @@ class _HabitGroupsState extends State<HabitGroups> {
       ),
     );
   }
+}
+
+Object habitGroupGate(
+    BuildContext conte, TextEditingController txtCont, Function func) {
+  bool isPerminant = false;
+  TimeHelper timeHelper = TimeHelper();
+  final cont = Get.find<HabitCont>();
+  return showGeneralDialog(
+    context: conte,
+    barrierDismissible: true,
+    barrierLabel: MaterialLocalizations.of(conte).modalBarrierDismissLabel,
+    barrierColor: const Color.fromARGB(133, 0, 0, 0),
+    pageBuilder: (conte, anim1, anim2) {
+      return StatefulBuilder(
+        builder: (conte, setstate) {
+          return SafeArea(
+            child: GestureDetector(
+              onTap: () {
+                func();
+              },
+              child: Scaffold(
+                resizeToAvoidBottomInset: true, // Set this to true
+                backgroundColor: Colors.black.withOpacity(.8),
+                body: Center(
+                  child: SizedBox(
+                    width: 350,
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        SizedBox(
+                          height: 80,
+                          child: Card(
+                            color: Colors.white,
+                            shadowColor: Colors.transparent,
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: TextField(
+                                controller: txtCont,
+                                maxLines:
+                                    null, // Set maxLines to null for multiline support
+                                decoration: const InputDecoration(
+                                    hintText: 'group name',
+                                    border: InputBorder.none),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 80,
+                          child: Card(
+                            color: Colors.white,
+                            shadowColor: Colors.transparent,
+                            child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Row(
+                                  children: [
+                                    Checkbox(
+                                      onChanged: (v) {
+                                        setstate(() {
+                                          {
+                                            isPerminant = !isPerminant;
+                                          }
+                                        });
+                                      },
+                                      value: isPerminant,
+                                    ),
+                                    const Text('Is perminant?')
+                                  ],
+                                )),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 110,
+                          child: Card(
+                            color: Colors.white,
+                            shadowColor: Colors.transparent,
+                            child: Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Row(
+                                children: [
+                                  taskProperty(
+                                      'choose date',
+                                      TextField(
+                                        enabled: false,
+                                        textAlign: TextAlign.center,
+                                        controller: cont.chosenDate,
+                                      ), () async {
+                                    String incomingValue =
+                                        await timeHelper.selectDate(conte);
+                                    if (incomingValue.isNotEmpty) {
+                                      cont.chosenDate.text = incomingValue;
+                                    }
+                                  }),
+                                  taskProperty(
+                                      'choose time',
+                                      TextField(
+                                        enabled: false,
+                                        textAlign: TextAlign.center,
+                                        controller: cont.chosenTime,
+                                      ), () async {
+                                    String incomingValue =
+                                        await timeHelper.selectTime(conte);
+                                    if (incomingValue.isNotEmpty) {
+                                      cont.chosenTime.text = incomingValue;
+                                    }
+                                  })
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
 }

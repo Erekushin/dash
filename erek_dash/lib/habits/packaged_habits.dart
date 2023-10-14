@@ -26,7 +26,20 @@ class _PackagedHabitsState extends State<PackagedHabits> {
             itemCount: littleCont.packagedList.length,
             itemBuilder: (c, i) {
               return littleCont.packagedList[i].isDone
-                  ? InkWell(
+                  ? Container(
+                      decoration: BoxDecoration(
+                          color: Colors.greenAccent,
+                          border: Border.all(color: Colors.green, width: 3),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(10))),
+                      padding: const EdgeInsets.all(20),
+                      margin: const EdgeInsets.all(10),
+                      child: const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                      ),
+                    )
+                  : InkWell(
                       onTap: () {
                         habitGate(context, littleCont.packagedList[i]);
                       },
@@ -40,20 +53,7 @@ class _PackagedHabitsState extends State<PackagedHabits> {
                         margin: const EdgeInsets.all(10),
                         child: Text(
                             littleCont.packagedList[i].actualData['habit']),
-                      ))
-                  : Container(
-                      decoration: BoxDecoration(
-                          color: Colors.greenAccent,
-                          border: Border.all(color: Colors.green, width: 3),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(10))),
-                      padding: const EdgeInsets.all(20),
-                      margin: const EdgeInsets.all(10),
-                      child: const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                      ),
-                    );
+                      ));
             });
       },
     );

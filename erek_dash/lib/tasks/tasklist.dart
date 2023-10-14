@@ -1,4 +1,4 @@
-import 'package:erek_dash/tasks/task_edit.dart';
+import 'package:erek_dash/tasks/task.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -30,14 +30,14 @@ class _TaskListState extends State<TaskList> {
             itemCount: littleCont.taskList.length,
             shrinkWrap: true,
             itemBuilder: (c, index) {
-              var item = littleCont.taskList[index];
+              var item = littleCont.taskList[index]['value'];
               return InkWell(
                 onTap: () {
                   littleCont.setValues(item);
 
-                  Get.to(() => TaskEdit(
+                  Get.to(() => Task(
                         item: item,
-                        id: cont.entryNames[index],
+                        id: cont.taskList[index]['id'],
                         selectedLabelid: item['label'] ?? 0,
                         selectedLabelname: item['labelname'] ?? '',
                       ));

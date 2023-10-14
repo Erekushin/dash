@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 
 import '../globals.dart';
 import '../widgets/snacks.dart';
-import 'habit_list.dart';
 
 class CurrentHabit {
   CurrentHabit(this.actualData, this.id, this.isDone);
@@ -21,8 +20,8 @@ class HabitCont extends GetxController {
     for (int i = 0; i < groupList.length; i++) {
       var item = groupList[i];
       if (now.hour >= item['upperthat'] && now.hour <= item['downerthat']) {
-        currentHabitTypeId = item['id'];
-        GlobalValues.homeScreenType = HomeScreenType.packagedHabits;
+        // currentHabitTypeId = item['id']; end current habit groupiig bodoj gargana
+        // GlobalValues.homeScreenType = HomeScreenType.packagedHabits;
       }
     }
   }
@@ -31,10 +30,15 @@ class HabitCont extends GetxController {
   RxList habitList = [].obs;
   List entryNames = [];
   RxList<CurrentHabit> packagedList = <CurrentHabit>[].obs;
+
+  String chosenGroupId = '';
   Future<dynamic> getAllHabits() async {
     try {
-      DatabaseEvent a =
-          await StaticHelpers.databaseReference.child(path).once();
+      Query b = StaticHelpers.databaseReference
+          .child(path)
+          .orderByChild('habit_group_id')
+          .equalTo(chosenGroupId);
+      DatabaseEvent a = await b.once();
       if (a.snapshot.exists) {
         Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
         entryNames = data.keys.toList();
@@ -42,33 +46,17 @@ class HabitCont extends GetxController {
       } else {
         habitList.clear();
       }
-      packageHabits();
     } catch (e) {
       Snacks.errorSnack(e);
     }
   }
 
-  int currentHabitTypeId = 0;
-  packageHabits() async {
-    packagedList.clear();
-    for (int i = 0; i < habitList.length; i++) {
-      if (habitList[i]['habit_type'] == currentHabitTypeId) {
-        bool thereNot = await checkIfThereSameProgress(entryNames[i]);
-        CurrentHabit newItem;
-        newItem =
-            CurrentHabit(habitList[i], int.parse(entryNames[i]), thereNot);
-        packagedList.add(newItem);
-      }
-    }
-  }
-
   TextEditingController habitTxtCnt = TextEditingController();
-  String chosenGroup = '';
 
   Map<String, dynamic> habitValues() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['habit'] = habitTxtCnt.text;
-    data['habit_type'] = chosenGroup;
+    data['habit_group_id'] = chosenGroupId;
     return data;
   }
 
@@ -262,22 +250,24 @@ class HabitCont extends GetxController {
 
   Map<String, dynamic> groupValues() {
     Map<String, dynamic> data = <String, dynamic>{};
-    data['name'] = gemTxt.text;
+    data['name'] = groupTxt.text;
     data['upperthat'] = 5;
     data['downerthat'] = 7;
     return data;
   }
 
-  TextEditingController gemTxt = TextEditingController();
+  TextEditingController groupTxt = TextEditingController();
+  TextEditingController chosenDate = TextEditingController();
+  TextEditingController chosenTime = TextEditingController();
   insertGroup() async {
     try {
-      if (gemTxt.text.isNotEmpty) {
+      if (groupTxt.text.isNotEmpty) {
         StaticHelpers.databaseReference
             .child('$groupPath/${StaticHelpers.id}')
             .set(groupValues())
             .whenComplete(() {
           allGroups();
-          gemTxt.clear();
+          groupTxt.clear();
         });
       }
     } catch (e) {
@@ -292,7 +282,7 @@ class HabitCont extends GetxController {
           .set(groupValues())
           .whenComplete(() {
         allGroups();
-        gemTxt.clear();
+        groupTxt.clear();
       });
     } catch (e) {
       Snacks.errorSnack(e);
@@ -305,6 +295,9 @@ class HabitCont extends GetxController {
           .child('$groupPath/$id')
           .remove()
           .then((_) {
+        //id aar ni habituudaas shvvj avaad ter avsan list iinhee key
+        //eer  ni davtaad ustgachih yum bna
+        getAllHabits();
         allGroups();
       });
     } catch (e) {

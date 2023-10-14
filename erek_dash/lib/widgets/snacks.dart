@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class Snacks {
+  static freeSnack(String txt) {
+    Get.snackbar('😇', txt,
+        colorText: Colors.white,
+        backgroundColor: Colors.grey,
+        duration: const Duration(seconds: 1));
+  }
+
   static savedSnack() {
     Get.snackbar('😇', 'saved',
         colorText: Colors.white,
@@ -16,7 +23,7 @@ class Snacks {
         duration: const Duration(seconds: 1));
   }
 
-  static chackSnack() {
+  static checkSnack() {
     Get.snackbar('😇', 'nice job',
         colorText: Colors.white,
         backgroundColor: const Color.fromARGB(255, 120, 12, 175),

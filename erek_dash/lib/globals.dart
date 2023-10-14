@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
@@ -7,7 +8,13 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:get/get.dart';
 
-enum HomeScreenType { allTasks, boxTasks, packagedHabits }
+enum MiddleScreenType {
+  allTasks,
+  outerTasks,
+  nowTasks,
+  boxTasks,
+  packagedHabits
+}
 
 class Sizes {
   static double gWidth = Get.width;
@@ -77,7 +84,6 @@ class StaticHelpers {
 }
 
 class GlobalValues {
-  static HomeScreenType homeScreenType = HomeScreenType.allTasks;
   static final DateTime _now = DateTime.now();
   static String get nowStr => _now.toString();
   static String get nowStrShort => _now.toString().substring(0, 10);
