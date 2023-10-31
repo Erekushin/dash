@@ -15,7 +15,7 @@ import 'home.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
-  //web
+  //firebase version
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   SystemChrome.setPreferredOrientations([
