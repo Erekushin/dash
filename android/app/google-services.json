@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "518470648235",
+    "firebase_url": "https://erek-dashboard-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "erek-dashboard",
+    "storage_bucket": "erek-dashboard.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:518470648235:android:e13dce89287ca12fead2ee",
+        "android_client_info": {
+          "package_name": "com.erek_dash"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmOLvaL2WeJyTwOOQEiMbh9lc0XjWyKhg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
