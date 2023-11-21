@@ -21,7 +21,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'sequences/sequence_cont.dart';
 
 void main() async {
-  //firebase version
+  //firebase version  9/58
   if (kIsWeb) {
     WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp(
