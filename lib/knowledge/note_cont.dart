@@ -12,7 +12,7 @@ class NoteCont extends GetxController {
   RxList notes = [].obs;
   List entryNames = [];
   List<bool> expandedbool = <bool>[];
-  String path = '/note/notes';
+  String path = '';
   Future labelNotes() async {
     try {
       Query b = StaticHelpers.databaseReference
@@ -101,7 +101,7 @@ class NoteCont extends GetxController {
   RxList labelList = [].obs;
   List labelIds = [];
   TextEditingController labeltxt = TextEditingController();
-  String labelpath = 'note/labels';
+  String labelpath = '';
   RxString chosenLabel = ''.obs;
 
   Future allLabels() async {

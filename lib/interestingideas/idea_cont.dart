@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import '../widgets/snacks.dart';
 
 class IdeaCont extends GetxController {
-  String path = 'newIdeas';
+  String path = '';
 
   RxList interestingIdeaList = [].obs;
   List entryNames = [];

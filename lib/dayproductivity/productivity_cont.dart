@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import '../globals.dart';
 
 class ProductivityCont extends GetxController {
-  String path = 'productivityduration';
+  String path = '';
 
   RxList allProductivity = [].obs;
   List entryNames = [];

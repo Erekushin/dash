@@ -25,7 +25,7 @@ class SequenceCont extends GetxController {
       }
     }
   }
-  String path = 'habit/habits';
+  String path = '';
 
   RxList habitList = [].obs;
   List entryNames = [];
@@ -111,7 +111,7 @@ class SequenceCont extends GetxController {
 
 //-------------------------------------
 //habit journal ruu hiih crud vildel
-  String progresspath = 'habits_journal';
+  String progresspath = '';
   RxList progressList = [].obs;
   List progressEntries = [];
   Future getAllProgress(String habitId) async {
@@ -227,7 +227,7 @@ class SequenceCont extends GetxController {
   }
 
   //----------------------habit groups-----------------------
-  String groupPath = 'habit/groups';
+  String groupPath = '';
 
   RxList groupList = [].obs;
   List groupEntries = [];

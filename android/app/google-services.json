@@ -13,7 +13,28 @@
           "package_name": "com.erek_dash"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "518470648235-9p4h4852moqqf39bc4omor5jacieq1at.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.erek_dash",
+            "certificate_hash": "58025aa103183353f372a92a95123c85fa3a6774"
+          }
+        },
+        {
+          "client_id": "518470648235-brqvqpmf5sbhti0bbvpsco2gamp15eiv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.erek_dash",
+            "certificate_hash": "76a3238fdff1d9a3abd668a910482b2fb444c50d"
+          }
+        },
+        {
+          "client_id": "518470648235-dpa36bs76tonjf6ja4ovn9qvmdqk20h1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBmOLvaL2WeJyTwOOQEiMbh9lc0XjWyKhg"
@@ -21,7 +42,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "518470648235-dpa36bs76tonjf6ja4ovn9qvmdqk20h1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

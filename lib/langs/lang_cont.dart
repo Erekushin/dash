@@ -9,7 +9,7 @@ class LangCont extends GetxController {
   RxList langList = [].obs;
   List entryNames = [];
   TextEditingController langtxt = TextEditingController();
-  String path = 'erek_language/langs';
+  String path = '';
 
   Future allLangs() async {
     try {

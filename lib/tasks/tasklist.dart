@@ -39,8 +39,8 @@ class _TaskListState extends State<TaskList> {
                   Get.to(() => Task(
                         item: item,
                         id: cont.taskList[index]['id'],
-                        selectedLabelid: item['label'] ?? 0,
-                        selectedLabelname: item['labelname'] ?? '',
+                        selectedLabelid: item['boxId'] ?? 0,
+                        selectedLabelname: item['boxname'] ?? '',
                       ));
                 },
                 child: item['boxId'] == "value"

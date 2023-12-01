@@ -20,7 +20,8 @@ class Task extends StatefulWidget {
   final item;
   final String id;
   String selectedLabelname;
-  int selectedLabelid;
+  String
+   selectedLabelid;
   @override
   State<Task> createState() => _TaskState();
 }
@@ -45,7 +46,7 @@ class _TaskState extends State<Task> {
             shrinkWrap: true,
             children: [
               Container(
-                height: 60,
+                height: 80,
                 decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.all(Radius.circular(10))),
@@ -187,13 +188,11 @@ class _TaskState extends State<Task> {
                                                     return InkWell(
                                                       onTap: () {
                                                         setState(() {
-                                                          widget.selectedLabelname =
+                                                          widget.selectedLabelname = cont.boxName = 
                                                               boxCont.boxList[i]
                                                                   ['boxname'];
                                                         });
-                                                        widget.selectedLabelid =
-                                                            boxCont.boxList[i]
-                                                                ['id'];
+                                                            cont.boxId = boxCont.entryNames[i]; 
                                                         Get.back();
                                                       },
                                                       child: Container(
@@ -260,7 +259,7 @@ class _TaskState extends State<Task> {
                           cont.updatedTime = GlobalValues.nowStr;
                           cont.updateTask(widget.id);
                         }),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 5),
                         standartBtn('Nailed It', () {
                           cont.doneIt = 1;
                           cont.finishedTime = GlobalValues.nowStrShort;

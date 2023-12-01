@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 import '../widgets/snacks.dart';
 
 class BoxCont extends GetxController {
-  String path = 'boxes';
+  String path = '';
 
   RxList boxList = [].obs;
   List entryNames = [];
@@ -107,7 +107,7 @@ class BoxCont extends GetxController {
     UploadTask uploadTask = reference.putData(boxImg[0], metaData);
     TaskSnapshot snapShot = await uploadTask.whenComplete(() {
       boxImg.clear();
-      print('image is uploaded');
+      print('proccess complited');
     });
     final imageUrl = await snapShot.ref.getDownloadURL();
     return imageUrl;

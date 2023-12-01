@@ -11,7 +11,7 @@ class IdeaStreamCont extends GetxController {
     return data;
   }
 
-  String path = 'streamOfIdeas';
+  String path = '';
   RxList ideaList = [].obs;
   List entryNames = [];
   Future<dynamic> getAllNewIdeas() async {

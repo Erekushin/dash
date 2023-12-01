@@ -6,7 +6,6 @@ import 'package:erek_dash/widgets/gates.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'archived_screens.dart';
 import 'boxes/boxcont.dart';
 import 'boxes/boxlist.dart';
@@ -35,14 +34,13 @@ class DashLanding extends StatefulWidget {
 
 class _DashLandingState extends State<DashLanding> {
   final boxCont = Get.find<BoxCont>();
-  final productivityCont = Get.find<ProductivityCont>();
-  final ideaStreamCont = Get.find<IdeaStreamCont>();
   final noteCont = Get.find<NoteCont>();
   final taskCont = Get.find<TaskCont>();
   final habitCont = Get.find<SequenceCont>();
   final langCont = Get.find<LangCont>();
-
   final ideaCont = Get.find<IdeaCont>();
+  final ideaStreamCont = Get.find<IdeaStreamCont>();
+  final productivityCont = Get.find<ProductivityCont>();
 
   GlobalKey<ScaffoldState> menuSidebarKey = GlobalKey<ScaffoldState>();
 
@@ -51,22 +49,20 @@ class _DashLandingState extends State<DashLanding> {
   @override
   void initState() {
     super.initState();
-    boxCont.path = "${StaticHelpers.userInfo!.uid}/${boxCont.path}";
+    boxCont.path = "${StaticHelpers.userInfo!.uid}/boxes";
     productivityCont.path =
-        "${StaticHelpers.userInfo!.uid}/${productivityCont.path}";
-    ideaStreamCont.path =
-        "${StaticHelpers.userInfo!.uid}/${ideaStreamCont.path}";
-    ideaCont.path = "${StaticHelpers.userInfo!.uid}/${ideaCont.path}";
-    noteCont.path = "${StaticHelpers.userInfo!.uid}/${noteCont.path}";
-    noteCont.labelpath = "${StaticHelpers.userInfo!.uid}/${noteCont.labelpath}";
-    langCont.path = "${StaticHelpers.userInfo!.uid}/${langCont.path}";
-    habitCont.path = "${StaticHelpers.userInfo!.uid}/${habitCont.path}";
-    habitCont.progresspath =
-        "${StaticHelpers.userInfo!.uid}/${habitCont.progresspath}";
-    habitCont.groupPath =
-        "${StaticHelpers.userInfo!.uid}/${habitCont.groupPath}";
-    taskCont.path = "${StaticHelpers.userInfo!.uid}/${taskCont.path}";
+        "${StaticHelpers.userInfo!.uid}/productivityduration";
+    ideaStreamCont.path = "${StaticHelpers.userInfo!.uid}/streamOfIdeas";
+    ideaCont.path = "${StaticHelpers.userInfo!.uid}/newIdeas";
+    noteCont.path = "${StaticHelpers.userInfo!.uid}/note/notes";
+    noteCont.labelpath = "${StaticHelpers.userInfo!.uid}/note/labels";
+    langCont.path = "${StaticHelpers.userInfo!.uid}/erek_language/langs";
+    habitCont.path = "${StaticHelpers.userInfo!.uid}/habit/habits";
+    habitCont.progresspath = "${StaticHelpers.userInfo!.uid}/habits_journal";
+    habitCont.groupPath = "${StaticHelpers.userInfo!.uid}/habit/groups";
+    taskCont.path = "${StaticHelpers.userInfo!.uid}/tasks";
     ideaStreamCont.getAllNewIdeas();
+    taskCont.getAllTask();
     habitCont.allGroups();
     habitCont.getAllHabits();
     productivityCont.getCurrentDay(GlobalValues.nowStrShort);
@@ -85,6 +81,14 @@ class _DashLandingState extends State<DashLanding> {
             : AppBar(
                 title: Text(homeTitle),
                 actions: [
+                  Obx(() => Visibility(
+                      visible: taskCont.loadingVis.value,
+                      child: const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 4,
+                          )))),
                   IconButton(
                       onPressed: () {
                         Get.to(

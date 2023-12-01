@@ -8,8 +8,9 @@ import '../widgets/snacks.dart';
 
 class TaskCont extends GetxController {
   final ideaCont = Get.find<IdeaStreamCont>();
-  String path = 'tasks';
+  String path = '';
   TimeHelper timeHelper = TimeHelper();
+  RxBool loadingVis = false.obs;
 
   RxString homeMiddleAreaType = 'allTasks'.obs;
 
@@ -17,7 +18,9 @@ class TaskCont extends GetxController {
   RxList taskList = [].obs;
   Future getAllTask() async {
     try {
+      loadingVis.value = true;
       Query b = StaticHelpers.databaseReference
+      
           .child(path)
           .orderByChild('done_it')
           .equalTo(
@@ -275,15 +278,18 @@ class TaskCont extends GetxController {
       }
       taskList[i]['value']['timeValue'] = timeValue / 2;
       taskList[i]['value']['remaininghours'] = remainingHour;
+      
     }
 
     taskList.sort(
         (a, b) => b['value']['timeValue']!.compareTo(a['value']['timeValue']!));
+        loadingVis.value = false;
     return taskList;
   }
 
   ///filter [allActiveTasks] by boxId
   Future getBoxTasks(String boxid) async {
+    loadingVis.value = true;
     try {
       List boxTasks = allActiveTasks
           .where((element) => element['value']['boxId'] == boxid)
