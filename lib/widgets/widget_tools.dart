@@ -23,3 +23,4 @@ Widget taskProperty(String title, Widget childWidget, Function func) {
     ],
   );
 }
+

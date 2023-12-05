@@ -1,3 +1,4 @@
+import 'package:erek_dash/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -5,9 +6,8 @@ import 'sequence_cont.dart';
 import 'sequences_view.dart';
 
 class Progression extends StatefulWidget {
-  const Progression({super.key, required this.item, required this.id});
+  const Progression({super.key, required this.item});
   final dynamic item;
-  final String id;
 
   @override
   State<Progression> createState() => _ProgressionState();
@@ -20,38 +20,31 @@ class _ProgressionState extends State<Progression> {
   RxBool editVis = false.obs;
   @override
   void initState() {
-    cont.getAllProgress(widget.id);
+    cont.readAllProgress(widget.item['id']);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        cont.habitTxtCnt.clear();
-        cont.stardedtimeofHabit.clear();
-        cont.finfishedtimeofHabit.clear();
-        cont.successPointofHabit.clear();
-        return true;
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.item['habit']),
-          actions: [
-            IconButton(
-                onPressed: () {
-                  addHabit(context, false, widget.id);
-                },
-                icon: const Icon(Icons.edit)),
-            IconButton(
-                onPressed: () {
-                  cont.deleteHabit(widget.id);
-                },
-                icon: const Icon(Icons.delete))
-          ],
-        ),
-        backgroundColor: Colors.purpleAccent,
-        body: Column(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.item['habit']),
+        actions: [
+          IconButton(
+              onPressed: () {
+                addHabit(context, false, widget.item['id']);
+              },
+              icon: const Icon(Icons.edit)),
+          IconButton(
+              onPressed: () {
+                cont.deleteSequenceItem(widget.item['id']);
+              },
+              icon: const Icon(Icons.delete))
+        ],
+      ),
+      body: Container(
+        decoration: BoxDecoration(gradient: MyColors.helperPink),
+        child: Column(
           children: [
             Container(
               margin: const EdgeInsets.only(top: 20, left: 20, right: 20),
@@ -125,14 +118,15 @@ class _ProgressionState extends State<Progression> {
                       children: [
                         IconButton(
                             onPressed: () {
-                              cont.deleteTaskProgress(chosenId, widget.id);
+                              cont.deleteHabitProgress(
+                                  chosenId, widget.item['id']);
                               editVis.value = false;
                             },
                             icon: const Icon(Icons.delete)),
                         IconButton(
                             onPressed: () {
-                              cont.updateTaskProgress(
-                                  chosenId, widget.id, widget.item['habit']);
+                              cont.updateHabitProgress(chosenId,
+                                  widget.item['id'], widget.item['habit']);
                               editVis.value = false;
                             },
                             icon: const Icon(Icons.save)),

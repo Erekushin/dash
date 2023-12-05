@@ -23,6 +23,7 @@ dependencies:
   intl: ^0.17.0 
   firebase_core: ^2.15.1
   firebase_auth: ^4.9.0
+  firebase_auth_web: ^5.8.9
   firebase_storage: ^11.2.6
   firebase_database: ^10.2.5
 

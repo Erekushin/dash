@@ -24,7 +24,7 @@ class _SequencesState extends State<Sequences> {
 
   @override
   void initState() {
-    cont.allGroups();
+    cont.readSequenceGroups();
     super.initState();
   }
 
@@ -45,12 +45,13 @@ class _SequencesState extends State<Sequences> {
                 itemBuilder: (c, i) {
                   return InkWell(
                       onTap: () {
-                        littleCont.chosenGroupId = littleCont.groupEntries[i];
-
+                        littleCont.chosenGroupId =
+                            littleCont.groupList[i]['id'];
                         Get.to(() => const Seq());
                       },
                       onLongPress: () {
-                        littleCont.chosenGroupId = littleCont.groupEntries[i];
+                        littleCont.chosenGroupId =
+                            littleCont.groupList[i]['id'];
                         cont.groupTxt.text = littleCont.groupList[i]['name'];
                         setState(() {
                           editvisible = true;
@@ -100,14 +101,7 @@ class _SequencesState extends State<Sequences> {
                           children: [
                             InkWell(
                               onTap: () async {
-                                await cont.getAllHabits();
-                                cont.packagedList.clear();
-                                for (int i = 0;
-                                    i < cont.habitList.length;
-                                    i++) {
-                                  cont.packagedList.add(CurrentHabit(
-                                      cont.habitList[i], 0, false));
-                                }
+                                await cont.readSequenceItems();
 
                                 taskCont.homeMiddleAreaType.value =
                                     'packagedHabits';
@@ -136,7 +130,7 @@ class _SequencesState extends State<Sequences> {
                             ),
                             InkWell(
                               onTap: () {
-                                cont.updateGroup(cont.chosenGroupId);
+                                cont.updateSequenceGroup(cont.chosenGroupId);
                                 setState(() {
                                   editvisible = false;
                                 });
@@ -150,7 +144,7 @@ class _SequencesState extends State<Sequences> {
                             const SizedBox(width: 10),
                             InkWell(
                               onTap: () {
-                                cont.deleteGroup(cont.chosenGroupId);
+                                cont.deleteSequenceGroup(cont.chosenGroupId);
                                 setState(() {
                                   editvisible = false;
                                 });
@@ -165,8 +159,8 @@ class _SequencesState extends State<Sequences> {
                     )),
                 InkWell(
                   onTap: () {
-                    habitGroupGate(context, cont.groupTxt, () {
-                      cont.insertGroup();
+                    sequenceGroupGate(context, cont.groupTxt, () {
+                      cont.createSequenceGroup();
                       Navigator.of(context).pop();
                     });
                   },
@@ -194,11 +188,15 @@ class _SequencesState extends State<Sequences> {
   }
 }
 
-Object habitGroupGate(
+Object sequenceGroupGate(
     BuildContext conte, TextEditingController txtCont, Function func) {
-  bool isPerminant = false;
   TimeHelper timeHelper = TimeHelper();
+  bool isRepeatable = false;
+  String type = 'weekly';
+  List<int> weekday = [];
+
   final cont = Get.find<SequenceCont>();
+
   return showGeneralDialog(
     context: conte,
     barrierDismissible: true,
@@ -207,6 +205,39 @@ Object habitGroupGate(
     pageBuilder: (conte, anim1, anim2) {
       return StatefulBuilder(
         builder: (conte, setstate) {
+          Widget myRadiobutton(String title, Function func) {
+            return Padding(
+                padding: const EdgeInsets.all(5),
+                child: Column(
+                  children: [
+                    InkWell(
+                        onTap: () {
+                          setstate(() {
+                            {
+                              func();
+                            }
+                          });
+                        },
+                        child: Container(
+                          width: 80,
+                          height:20,
+                          decoration: BoxDecoration(
+                              gradient: title == type
+                                  ? MyColors.helperPink
+                                  : const LinearGradient(colors: [
+                                      Colors.white,
+                                      Colors.white,
+                                    ]),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(10)),
+                              border: Border.all(width: 1.5)),
+                        )),
+                        const SizedBox(height: 10),
+                    Text(title)
+                  ],
+                ));
+          }
+
           return SafeArea(
             child: GestureDetector(
               onTap: () {
@@ -217,7 +248,7 @@ Object habitGroupGate(
                 backgroundColor: Colors.black.withOpacity(.8),
                 body: Center(
                   child: SizedBox(
-                    width: 350,
+                    width: 365,
                     child: ListView(
                       shrinkWrap: true,
                       children: [
@@ -239,66 +270,141 @@ Object habitGroupGate(
                             ),
                           ),
                         ),
-                        SizedBox(
-                          height: 80,
-                          child: Card(
-                            color: Colors.white,
-                            shadowColor: Colors.transparent,
-                            child: Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: Row(
-                                  children: [
-                                    Checkbox(
-                                      onChanged: (v) {
-                                        setstate(() {
-                                          {
-                                            isPerminant = !isPerminant;
-                                          }
-                                        });
-                                      },
-                                      value: isPerminant,
-                                    ),
-                                    const Text('Is perminant?')
-                                  ],
-                                )),
+                        Visibility(
+                          visible: isRepeatable,
+                          child: SizedBox(
+                            height: 260,
+                            child: Card(
+                              color: const Color.fromARGB(255, 255, 255, 255),
+                              shadowColor: Colors.transparent,
+                              child: Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          taskProperty(
+                                              'start time',
+                                              TextField(
+                                                enabled: false,
+                                                textAlign: TextAlign.center,
+                                                controller: cont.chosenTime,
+                                              ), () async {
+                                            String incomingValue =
+                                                await timeHelper
+                                                    .selectTime(conte);
+                                            if (incomingValue.isNotEmpty) {
+                                              cont.chosenTime.text =
+                                                  incomingValue;
+                                            }
+                                          }),
+                                          taskProperty(
+                                              'finish time',
+                                              TextField(
+                                                enabled: false,
+                                                textAlign: TextAlign.center,
+                                                controller: cont.chosenTime,
+                                              ), () async {
+                                            String incomingValue =
+                                                await timeHelper
+                                                    .selectTime(conte);
+                                            if (incomingValue.isNotEmpty) {
+                                              cont.chosenTime.text =
+                                                  incomingValue;
+                                            }
+                                          })
+                                        ],
+                                      ),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          myRadiobutton('weekly', () async {
+                                            type = 'weekly';
+                                          }),
+                                          myRadiobutton('monthly', () async{
+                                            type = 'monthly';
+                                               String incomingValue =
+                                                await timeHelper
+                                                    .selectDate(conte);
+                                          }),
+                                        ],
+                                      ),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      SizedBox(
+                                        width: 300,
+                                        height: 50,
+                                        child: ListView.builder(
+                                            shrinkWrap: true,
+                                            itemCount: 7,
+                                            scrollDirection: Axis.horizontal,
+                                            itemBuilder: (c, i) {
+                                              return InkWell(
+                                                onTap: () {
+                                                  setstate(() {
+                                                    {
+                                                      if(weekday.contains(i)){
+                                                         weekday.remove(i);
+                                                      }else
+                                                      {
+                                                         weekday.add(i);
+                                                      }
+                                                     
+                                                    }
+                                                  });
+                                                },
+                                                child: Container(
+                                                  alignment: Alignment.center,
+                                                  margin:
+                                                      const EdgeInsets.all(5),
+                                                  decoration: BoxDecoration(
+                                                      gradient: weekday.contains(i)
+                                                          ? MyColors.helperPink
+                                                          : const LinearGradient(
+                                                              colors: [
+                                                                  Colors.white,
+                                                                  Colors.white
+                                                                ]),
+                                                      border: Border.all(
+                                                          width: 0.5),
+                                                      borderRadius:
+                                                          const BorderRadius
+                                                              .all(
+                                                              Radius.circular(
+                                                                  5))),
+                                                  width: 30,
+                                                  height: 30,
+                                                  child:
+                                                      Text((i + 1).toString(), style: TextStyle(color: weekday.contains(i)? Colors.white : Colors.black),),
+                                                ),
+                                              );
+                                            }),
+                                      )
+                                    ],
+                                  )),
+                            ),
                           ),
                         ),
                         SizedBox(
-                          height: 110,
+                          height: 50,
                           child: Card(
-                            color: Colors.white,
+                            color: const Color.fromARGB(255, 255, 255, 255),
                             shadowColor: Colors.transparent,
-                            child: Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Row(
-                                children: [
-                                  taskProperty(
-                                      'choose date',
-                                      TextField(
-                                        enabled: false,
-                                        textAlign: TextAlign.center,
-                                        controller: cont.chosenDate,
-                                      ), () async {
-                                    String incomingValue =
-                                        await timeHelper.selectDate(conte);
-                                    if (incomingValue.isNotEmpty) {
-                                      cont.chosenDate.text = incomingValue;
-                                    }
-                                  }),
-                                  taskProperty(
-                                      'choose time',
-                                      TextField(
-                                        enabled: false,
-                                        textAlign: TextAlign.center,
-                                        controller: cont.chosenTime,
-                                      ), () async {
-                                    String incomingValue =
-                                        await timeHelper.selectTime(conte);
-                                    if (incomingValue.isNotEmpty) {
-                                      cont.chosenTime.text = incomingValue;
-                                    }
-                                  })
-                                ],
+                            child: InkWell(
+                              onTap: () {
+                                setstate(() {
+                                  isRepeatable = !isRepeatable;
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Text(
+                                    'is is repeatable? / ${isRepeatable ? "if no" : "is yes"} tap here'),
                               ),
                             ),
                           ),
@@ -328,7 +434,7 @@ class _SeqState extends State<Seq> {
 
   @override
   void initState() {
-    cont.getAllHabits();
+    cont.readSequenceItems();
     super.initState();
   }
 
@@ -361,16 +467,14 @@ class _SeqState extends State<Seq> {
           child: GetX<SequenceCont>(
             builder: (littleCont) {
               return ListView.builder(
-                  itemCount: littleCont.habitList.length,
+                  itemCount: littleCont.seqitems.length,
                   itemBuilder: (c, i) {
                     return InkWell(
                       onTap: () {
-                        cont.habitTxtCnt.text =
-                            littleCont.habitList[i]['habit'];
+                        cont.habitTxtCnt.text = littleCont.seqitems[i]['habit'];
 
                         Get.to(() => Progression(
-                              item: littleCont.habitList[i],
-                              id: littleCont.entryNames[i],
+                              item: littleCont.seqitems[i],
                             ));
                       },
                       child: Container(
@@ -380,7 +484,7 @@ class _SeqState extends State<Seq> {
                             color: Colors.white,
                             borderRadius:
                                 BorderRadius.all(Radius.circular(15))),
-                        child: Text(littleCont.habitList[i]['habit']),
+                        child: Text(littleCont.seqitems[i]['habit']),
                       ),
                     );
                   });
@@ -392,6 +496,7 @@ class _SeqState extends State<Seq> {
 
 Object habitGateWithGroup(BuildContext conte, bool isAdd, String id) {
   final cont = Get.find<SequenceCont>();
+
   return showGeneralDialog(
     context: conte,
     barrierDismissible: true,
@@ -430,30 +535,50 @@ Object habitGateWithGroup(BuildContext conte, bool isAdd, String id) {
                             ),
                           ),
                           const Divider(),
-                          const TextField(
+                          TextField(
+                            controller: cont.importancy,
                             maxLines:
                                 null, // Set maxLines to null for multiline support
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               hintText: 'importancy',
                               border: InputBorder.none,
                             ),
                           ),
                           const Divider(),
-                          const TextField(
+                          TextField(
+                            controller: cont.seqnumber,
                             maxLines:
                                 null, // Set maxLines to null for multiline support
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               hintText: 'sequence number',
                               border: InputBorder.none,
                             ),
                           ),
+                          const Divider(),
+                          Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Row(
+                                children: [
+                                  Checkbox(
+                                    onChanged: (v) {
+                                      setstate(() {
+                                        {
+                                          cont.isMoveable = !cont.isMoveable;
+                                        }
+                                      });
+                                    },
+                                    value: cont.isMoveable,
+                                  ),
+                                  const Text('Is Moveable?')
+                                ],
+                              )),
                           Padding(
                             padding: const EdgeInsets.all(20),
                             child: InkWell(
                               onTap: () {
                                 isAdd
-                                    ? cont.insertHabit()
-                                    : cont.updateHabit(id);
+                                    ? cont.insertSequenceItem()
+                                    : cont.updateSequenceItem(id);
                                 Navigator.of(conte).pop();
                               },
                               child: Container(
@@ -547,7 +672,7 @@ Object addHabit(BuildContext conte, bool isAdd, String id) {
                               items: [
                                 for (int i = 0; i < cont.groupList.length; i++)
                                   DropdownMenuItem(
-                                    value: cont.groupEntries[i],
+                                    value: cont.groupList[i]['id'],
                                     child: Text(cont.groupList[i]['name']),
                                   ),
                               ],
@@ -562,8 +687,8 @@ Object addHabit(BuildContext conte, bool isAdd, String id) {
                             child: InkWell(
                               onTap: () {
                                 isAdd
-                                    ? cont.insertHabit()
-                                    : cont.updateHabit(id);
+                                    ? cont.insertSequenceItem()
+                                    : cont.updateSequenceItem(id);
                                 Navigator.of(conte).pop();
                               },
                               child: Container(

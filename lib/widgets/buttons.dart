@@ -1,3 +1,4 @@
+import 'package:erek_dash/globals.dart';
 import 'package:flutter/material.dart';
 
 Widget standartBtn(String title, Function func) {
@@ -53,10 +54,7 @@ Widget erekBtn(String title, bool clrBool, Function func) {
           height: 50,
           decoration: BoxDecoration(
               gradient: clrBool
-                  ? const LinearGradient(colors: [
-                      Color.fromARGB(255, 57, 19, 161),
-                      Colors.black,
-                    ])
+                  ?  MyColors.helperPink
                   : const LinearGradient(colors: [
                       Colors.black,
                       Colors.black,

@@ -24,6 +24,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="erek_dash">
+  <meta name="google-signin-client_id" content="518470648235-dpa36bs76tonjf6ja4ovn9qvmdqk20h1.apps.googleusercontent.com">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
@@ -32,10 +33,14 @@
   <title>erek_dash</title>
   <link rel="manifest" href="manifest.json">
 
+
+  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js"></script>
   <script type="module">
     // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-analytics.js";
+    import "firebase/auth";
+
     // TODO: Add SDKs for Firebase products that you want to use
     // https://firebase.google.com/docs/web/setup#available-libraries
   
@@ -55,6 +60,7 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
+    const auth = firebase.auth();
   </script>
 
   <script>

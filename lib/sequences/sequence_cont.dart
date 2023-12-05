@@ -5,18 +5,9 @@ import 'package:get/get.dart';
 import '../globals.dart';
 import '../widgets/snacks.dart';
 
-class CurrentHabit {
-  CurrentHabit(this.actualData, this.id, this.isDone);
-  dynamic actualData = {};
-  int id;
-  bool isDone = false;
-}
-
 class SequenceCont extends GetxController {
-  DateTime now1 = DateTime.now();
-
   SequenceCont() {
-    DateTime now = DateTime(now1.year, now1.month, now1.day, now1.hour, 0, 0);
+    DateTime now = DateTime.now();
     for (int i = 0; i < groupList.length; i++) {
       var item = groupList[i];
       if (now.hour >= item['upperthat'] && now.hour <= item['downerthat']) {
@@ -25,14 +16,94 @@ class SequenceCont extends GetxController {
       }
     }
   }
-  String path = '';
 
-  RxList habitList = [].obs;
-  List entryNames = [];
-  RxList<CurrentHabit> packagedList = <CurrentHabit>[].obs;
+//#region sequence group CRUD
 
-  String chosenGroupId = '';
-  Future<dynamic> getAllHabits() async {
+  createSequenceGroup() async {
+    try {
+      String id = StaticHelpers.id;
+      if (groupTxt.text.isNotEmpty) {
+        StaticHelpers.databaseReference
+            .child('$groupPath/$id')
+            .set(sequenceGroupData(id))
+            .whenComplete(() {
+          readSequenceGroups();
+          groupTxt.clear();
+        });
+      }
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  readSequenceGroups() async {
+    try {
+      DatabaseEvent a =
+          await StaticHelpers.databaseReference.child(groupPath).once();
+      if (a.snapshot.exists) {
+        Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
+        groupList.value = data.values.toList();
+      } else {
+        groupList.clear();
+      }
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  updateSequenceGroup(String id) async {
+    try {
+      StaticHelpers.databaseReference
+          .child('$groupPath/$id')
+          .set(sequenceGroupData(id))
+          .whenComplete(() {
+        readSequenceGroups();
+        groupTxt.clear();
+      }); 
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  deleteSequenceGroup(String id) async {
+    try {
+      StaticHelpers.databaseReference
+          .child('$groupPath/$id')
+          .remove()
+          .then((_) {
+        //id aar ni habituudaas shvvj avaad ter avsan list iinhee key
+        //eer  ni davtaad ustgachih yum bna
+        readSequenceItems();
+        readSequenceGroups();
+      });
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+//#endregion sequence group CRUD
+
+//#region sequence item CRUD
+
+  insertSequenceItem() async {
+    if (habitTxtCnt.text.isNotEmpty) {
+      String id = StaticHelpers.id;
+      try {
+        StaticHelpers.databaseReference
+            .child('$path/$id')
+            .set(sequenceItemData(id))
+            .whenComplete(() {
+          Snacks.savedSnack();
+          clearfields();
+          readSequenceItems();
+        });
+      } catch (e) {
+        Snacks.errorSnack(e);
+      }
+    }
+  }
+
+  readSequenceItems() async {
     try {
       Query b = StaticHelpers.databaseReference
           .child(path)
@@ -41,67 +112,41 @@ class SequenceCont extends GetxController {
       DatabaseEvent a = await b.once();
       if (a.snapshot.exists) {
         Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
-        entryNames = data.keys.toList();
-        habitList.value = data.values.toList();
+        seqitems.value = data.values.toList();
+        seqitems.sort((a, b) => a['seqnumber'].compareTo(b['seqnumber']));
       } else {
-        habitList.clear();
+        clearfields();
       }
     } catch (e) {
       Snacks.errorSnack(e);
     }
   }
 
-  TextEditingController habitTxtCnt = TextEditingController();
-
-  Map<String, dynamic> habitValues() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['habit'] = habitTxtCnt.text;
-    data['habit_group_id'] = chosenGroupId;
-    return data;
-  }
-
-  Future insertHabit() async {
-    if (habitTxtCnt.text.isNotEmpty) {
-      try {
-        StaticHelpers.databaseReference
-            .child('$path/${StaticHelpers.id}')
-            .set(habitValues())
-            .whenComplete(() {
-          Snacks.savedSnack();
-          habitTxtCnt.clear();
-          getAllHabits();
-        });
-      } catch (e) {
-        Snacks.errorSnack(e);
-      }
-    }
-  }
-
-  Future updateHabit(String id) async {
+  updateSequenceItem(String id) async {
     try {
       habitTxtCnt.text = habitTxtCnt.text.trimRight();
       StaticHelpers.databaseReference
           .child('$path/$id')
-          .set(habitValues())
+          .set(sequenceItemData(id))
           .whenComplete(() {
         Snacks.savedSnack();
         Future.delayed(const Duration(seconds: 2), () {
           Get.back();
         });
-        habitTxtCnt.clear();
-        getAllHabits();
+        clearfields();
+        readSequenceItems();
       });
     } catch (e) {
       Snacks.errorSnack(e);
     }
   }
 
-  void deleteHabit(String id) async {
+  deleteSequenceItem(String id) async {
     try {
       StaticHelpers.databaseReference.child('$path/$id').remove().then((_) {
-        getAllHabits();
+        readSequenceItems();
         Get.back();
-        habitTxtCnt.clear();
+        clearfields();
         Snacks.deleteSnack();
       });
     } catch (e) {
@@ -109,12 +154,32 @@ class SequenceCont extends GetxController {
     }
   }
 
-//-------------------------------------
-//habit journal ruu hiih crud vildel
-  String progresspath = '';
-  RxList progressList = [].obs;
-  List progressEntries = [];
-  Future getAllProgress(String habitId) async {
+//#endregion sequence item CRUD
+
+//#region habit progression CRUD
+
+  createHabitProgress(String habitName, String habitId) async {
+    await checkIfThereSameProgress(habitId);
+    if (ifThere.isEmpty) {
+      try {
+        StaticHelpers.databaseReference
+            .child('$progresspath/${StaticHelpers.id}')
+            .set(habitprogressValues(habitName, habitId))
+            .whenComplete(() {
+          stardedtimeofHabit.clear();
+          finfishedtimeofHabit.clear();
+          successPointofHabit.clear();
+          readSequenceItems();
+        });
+      } catch (e) {
+        Snacks.errorSnack(e);
+      }
+    } else {
+      Snacks.warningSnack('Утгийг аль хэдийн нэмсэн байна');
+    }
+  }
+
+  readAllProgress(String habitId) async {
     try {
       Query b = StaticHelpers.databaseReference
           .child(progresspath)
@@ -134,8 +199,80 @@ class SequenceCont extends GetxController {
     }
   }
 
-  RxList dayProgress = [].obs;
-  Future dayHabitProgress(String theday) async {
+  updateHabitProgress(String id, String habitId, String habitname) async {
+    try {
+      StaticHelpers.databaseReference
+          .child('$progresspath/$id')
+          .set(habitprogressValues(habitname, habitId))
+          .whenComplete(() {
+        stardedtimeofHabit.clear();
+        finfishedtimeofHabit.clear();
+        successPointofHabit.clear();
+        readAllProgress(habitId);
+      });
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  deleteHabitProgress(String id, String habitId) async {
+    try {
+      StaticHelpers.databaseReference
+          .child('$progresspath/$id')
+          .remove()
+          .then((_) {
+        readAllProgress(habitId);
+        readSequenceItems();
+        Snacks.deleteSnack();
+      });
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+//#endregion habit progression CRUD
+
+  //#region helpers
+
+  Map<String, dynamic> sequenceGroupData(String id) {
+    Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = groupTxt.text;
+    data['upperthat'] = 5;
+    data['downerthat'] = 7;
+    return data;
+  }
+
+  Map<String, dynamic> sequenceItemData(String id) {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['habit'] = habitTxtCnt.text;
+    data['habit_group_id'] = chosenGroupId;
+    data['seqnumber'] = int.parse(seqnumber.text);
+    data['importancy'] = int.parse(importancy.text);
+    data['ismoveable'] = isMoveable;
+    return data;
+  }
+
+  Map<String, dynamic> habitprogressValues(String habitName, String habitId) {
+    Map<String, dynamic> data = <String, dynamic>{};
+    data['habit'] = habitName;
+    data['day_date'] = GlobalValues.nowStrShort;
+    data['starting_time'] = stardedtimeofHabit.text;
+    data['finished_time'] = finfishedtimeofHabit.text;
+    data['success_count'] = successPointofHabit.text;
+    data['habit_id'] = habitId;
+    return data;
+  }
+
+  clearfields() {
+    habitTxtCnt.clear();
+    importancy.clear();
+    seqnumber.clear();
+    isMoveable = false;
+  }
+
+  dayHabitProgress(String theday) async {
     try {
       // final db = await Erekdatabase.database;
       // dayProgress.value = await db
@@ -145,7 +282,6 @@ class SequenceCont extends GetxController {
     }
   }
 
-  List ifThere = [];
   Future<bool> checkIfThereSameProgress(String habitId) async {
     try {
       // final db = await Erekdatabase.database;
@@ -160,148 +296,56 @@ class SequenceCont extends GetxController {
     }
   }
 
-  TextEditingController stardedtimeofHabit = TextEditingController();
-  TextEditingController finfishedtimeofHabit = TextEditingController();
-  Map<String, dynamic> habitprogressValues(String habitName, String habitId) {
-    Map<String, dynamic> data = <String, dynamic>{};
-    data['habit'] = habitName;
-    data['day_date'] = GlobalValues.nowStrShort;
-    data['starting_time'] = stardedtimeofHabit.text;
-    data['finished_time'] = finfishedtimeofHabit.text;
-    data['success_count'] = successPointofHabit.text;
-    data['habit_id'] = habitId;
-    return data;
-  }
+//#endregion helpers
 
-  Future insertHabitProgress(String habitName, String habitId) async {
-    await checkIfThereSameProgress(habitId);
-    if (ifThere.isEmpty) {
-      try {
-        StaticHelpers.databaseReference
-            .child('$progresspath/${StaticHelpers.id}')
-            .set(habitprogressValues(habitName, habitId))
-            .whenComplete(() {
-          stardedtimeofHabit.clear();
-          finfishedtimeofHabit.clear();
-          successPointofHabit.clear();
-          getAllHabits();
-        });
-      } catch (e) {
-        Snacks.errorSnack(e);
-      }
-    } else {
-      Snacks.warningSnack('Утгийг аль хэдийн нэмсэн байна');
-    }
-  }
+//#region variables
 
-  TextEditingController successPointofHabit = TextEditingController();
-  Future updateTaskProgress(String id, String habitId, String habitname) async {
-    try {
-      StaticHelpers.databaseReference
-          .child('$progresspath/$id')
-          .set(habitprogressValues(habitname, habitId))
-          .whenComplete(() {
-        stardedtimeofHabit.clear();
-        finfishedtimeofHabit.clear();
-        successPointofHabit.clear();
-        getAllProgress(habitId);
-      });
-    } catch (e) {
-      Snacks.errorSnack(e);
-    }
-  }
+  /// firebase realtime database deerh swequence iin zam
+  String path = '';
 
-  void deleteTaskProgress(String id, String habitId) async {
-    try {
-      StaticHelpers.databaseReference
-          .child('$progresspath/$id')
-          .remove()
-          .then((_) {
-        getAllProgress(habitId);
-        getAllHabits();
-        Snacks.deleteSnack();
-      });
-    } catch (e) {
-      Snacks.errorSnack(e);
-    }
-  }
-
-  //----------------------habit groups-----------------------
+  /// firebase realtime database deerh swequence iin groupiin zam
   String groupPath = '';
 
-  RxList groupList = [].obs;
-  List groupEntries = [];
-  Future allGroups() async {
-    try {
-      DatabaseEvent a =
-          await StaticHelpers.databaseReference.child(groupPath).once();
-      if (a.snapshot.exists) {
-        Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
-        groupList.value = data.values.toList();
-        groupEntries = data.keys.toList();
-      } else {
-        groupList.clear();
-        groupEntries.clear();
-      }
-    } catch (e) {
-      Snacks.errorSnack(e);
-    }
-  }
+  /// firebase realtime database deerh swequence iin progress iin zam
+  String progresspath = '';
 
-  Map<String, dynamic> groupValues() {
-    Map<String, dynamic> data = <String, dynamic>{};
-    data['name'] = groupTxt.text;
-    data['upperthat'] = 5;
-    data['downerthat'] = 7;
-    return data;
-  }
+  /// songoson sequence group dotorh itemiin list
+  RxList seqitems = [].obs;
+
+  ///txt input for sequence item
+  TextEditingController habitTxtCnt = TextEditingController();
+
+  ///sequence number input for sequence item
+  TextEditingController seqnumber = TextEditingController();
+
+  ///importancy number input for sequence item
+  TextEditingController importancy = TextEditingController();
+
+  ///bool for whether it is can be moved in to front screen or not
+  bool isMoveable = false;
+
+  ///chosen sequence group id
+  String chosenGroupId = '';
+
+  /// sequence iin biyleltiig haruulsan bool list
+  RxList isDone = [].obs;
 
   TextEditingController groupTxt = TextEditingController();
   TextEditingController chosenDate = TextEditingController();
   TextEditingController chosenTime = TextEditingController();
-  insertGroup() async {
-    try {
-      if (groupTxt.text.isNotEmpty) {
-        StaticHelpers.databaseReference
-            .child('$groupPath/${StaticHelpers.id}')
-            .set(groupValues())
-            .whenComplete(() {
-          allGroups();
-          groupTxt.clear();
-        });
-      }
-    } catch (e) {
-      Snacks.errorSnack(e);
-    }
-  }
 
-  updateGroup(String id) async {
-    try {
-      StaticHelpers.databaseReference
-          .child('$groupPath/$id')
-          .set(groupValues())
-          .whenComplete(() {
-        allGroups();
-        groupTxt.clear();
-      });
-    } catch (e) {
-      Snacks.errorSnack(e);
-    }
-  }
+  TextEditingController stardedtimeofHabit = TextEditingController();
+  TextEditingController finfishedtimeofHabit = TextEditingController();
 
-  deleteGroup(String id) async {
-    try {
-      StaticHelpers.databaseReference
-          .child('$groupPath/$id')
-          .remove()
-          .then((_) {
-        //id aar ni habituudaas shvvj avaad ter avsan list iinhee key
-        //eer  ni davtaad ustgachih yum bna
-        getAllHabits();
-        allGroups();
-      });
-    } catch (e) {
-      Snacks.errorSnack(e);
-    }
-  }
+  RxList groupList = [].obs;
+
+  RxList progressList = [].obs;
+  List progressEntries = [];
+
+  TextEditingController successPointofHabit = TextEditingController();
+
+  RxList dayProgress = [].obs;
+  List ifThere = [];
+
+//#endregion variables
 }

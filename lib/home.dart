@@ -63,8 +63,8 @@ class _DashLandingState extends State<DashLanding> {
     taskCont.path = "${StaticHelpers.userInfo!.uid}/tasks";
     ideaStreamCont.getAllNewIdeas();
     taskCont.getAllTask();
-    habitCont.allGroups();
-    habitCont.getAllHabits();
+    habitCont.readSequenceGroups();
+    habitCont.readSequenceItems();
     productivityCont.getCurrentDay(GlobalValues.nowStrShort);
     boxCont.allBoxes();
   }

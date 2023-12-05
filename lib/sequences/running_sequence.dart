@@ -23,43 +23,46 @@ class _PackagedHabitsState extends State<RunningSequence> {
         return ListView.builder(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: littleCont.packagedList.length,
+            itemCount: littleCont.seqitems.length,
             itemBuilder: (c, i) {
-              return littleCont.packagedList[i].isDone
-                  ? Container(
-                      decoration: BoxDecoration(
-                          color: Colors.greenAccent,
-                          border: Border.all(color: Colors.green, width: 3),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(10))),
-                      padding: const EdgeInsets.all(20),
-                      margin: const EdgeInsets.all(10),
-                      child: const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                      ),
-                    )
-                  : InkWell(
-                      onTap: () {
-                        habitGate(context, littleCont.packagedList[i]);
-                      },
-                      child: Container(
+              if (littleCont.seqitems[i]['ismoveable']) {
+                return littleCont.isDone.isEmpty || !littleCont.isDone[i]
+                    ? InkWell(
+                        onTap: () {
+                          habitGate(context, littleCont.seqitems[i]);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.black, width: 3),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(10))),
+                          padding: const EdgeInsets.all(20),
+                          margin: const EdgeInsets.all(10),
+                          child: Text(littleCont.seqitems[i]['habit']),
+                        ))
+                    : Container(
                         decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.black, width: 3),
+                            color: Colors.greenAccent,
+                            border: Border.all(color: Colors.green, width: 3),
                             borderRadius:
                                 const BorderRadius.all(Radius.circular(10))),
                         padding: const EdgeInsets.all(20),
                         margin: const EdgeInsets.all(10),
-                        child: Text(
-                            littleCont.packagedList[i].actualData['habit']),
-                      ));
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                        ),
+                      );
+              } else {
+                return const SizedBox();
+              }
             });
       },
     );
   }
 
-  Object habitGate(BuildContext conte, CurrentHabit item) {
+  Object habitGate(BuildContext conte, var item) {
     return showGeneralDialog(
       context: conte,
       barrierDismissible: true,
@@ -74,8 +77,7 @@ class _PackagedHabitsState extends State<RunningSequence> {
                   if (cont.stardedtimeofHabit.text.isNotEmpty &&
                       cont.finfishedtimeofHabit.text.isNotEmpty &&
                       cont.successPointofHabit.text.isNotEmpty) {
-                    cont.insertHabitProgress(
-                        item.actualData['habit'], item.id.toString());
+                    cont.createHabitProgress(item['habit'], item['id']);
                   }
                   Navigator.of(context).pop();
                 },

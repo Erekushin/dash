@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:get/get.dart';
 
@@ -21,6 +22,10 @@ class Sizes {
 
 class MyColors {
   static Color mainColor = const Color.fromARGB(255, 67, 67, 67);
+  static LinearGradient helperPink = const LinearGradient(colors: [
+     Color.fromARGB(255, 57, 19, 161),
+    Colors.black,
+  ]);
 }
 
 class GlobalStatics {
