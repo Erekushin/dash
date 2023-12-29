@@ -38,6 +38,7 @@ class GlobalStatics {
 }
 
 class StaticHelpers {
+  static RxString homeMiddleAreaType = 'allTasks'.obs;
   static User? userInfo;
   static bool darkMode = false;
   static final DatabaseReference databaseReference =

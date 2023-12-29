@@ -16,7 +16,7 @@ class _LoginState extends State<Login> {
     var cont = Get.find<SecurityCont>();
     return Scaffold(
       backgroundColor: MyColors.mainColor,
-      body: Center(
+      body: Center( 
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,

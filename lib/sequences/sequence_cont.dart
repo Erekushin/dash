@@ -6,17 +6,6 @@ import '../globals.dart';
 import '../widgets/snacks.dart';
 
 class SequenceCont extends GetxController {
-  SequenceCont() {
-    DateTime now = DateTime.now();
-    for (int i = 0; i < groupList.length; i++) {
-      var item = groupList[i];
-      if (now.hour >= item['upperthat'] && now.hour <= item['downerthat']) {
-        // currentHabitTypeId = item['id']; end current habit groupiig bodoj gargana
-        // GlobalValues.homeScreenType = HomeScreenType.packagedHabits;
-      }
-    }
-  }
-
 //#region sequence group CRUD
 
   createSequenceGroup() async {
@@ -28,11 +17,11 @@ class SequenceCont extends GetxController {
             .set(sequenceGroupData(id))
             .whenComplete(() {
           readSequenceGroups();
-          groupTxt.clear();
+          clearSequenceGroupfields();
         });
       }
     } catch (e) {
-      Snacks.errorSnack(e);
+      Snacks.errorSnack("Group creation error: $e");
     }
   }
 
@@ -43,11 +32,12 @@ class SequenceCont extends GetxController {
       if (a.snapshot.exists) {
         Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
         groupList.value = data.values.toList();
+        checkIsItCurrentGroup();
       } else {
         groupList.clear();
       }
     } catch (e) {
-      Snacks.errorSnack(e);
+      Snacks.errorSnack("Sequence read error $e");
     }
   }
 
@@ -59,7 +49,7 @@ class SequenceCont extends GetxController {
           .whenComplete(() {
         readSequenceGroups();
         groupTxt.clear();
-      }); 
+      });
     } catch (e) {
       Snacks.errorSnack(e);
     }
@@ -116,6 +106,7 @@ class SequenceCont extends GetxController {
         seqitems.sort((a, b) => a['seqnumber'].compareTo(b['seqnumber']));
       } else {
         clearfields();
+        seqitems.clear();
       }
     } catch (e) {
       Snacks.errorSnack(e);
@@ -232,14 +223,51 @@ class SequenceCont extends GetxController {
 
 //#endregion habit progression CRUD
 
-  //#region helpers
+//#region helpers
+
+  checkIsItCurrentGroup() {
+    DateTime now = DateTime.now();
+    for (int i = 0; i < groupList.length; i++) {
+      if (groupList[i]['repeatType'] == 'weekly') {
+        List weekDays = groupList[i]['weeklyDays'];
+        for (int ii = 0; ii < weekDays.length; ii++) {
+          if (weekDays[ii] == now.weekday) {
+            checkIsItCurrentTime(now, groupList[i]['startTime'],
+                groupList[i]['endTime'], groupList[i]['id']);
+          }
+        }
+      } else if (groupList[i]['repeatType'] == 'monthly') {
+        if (groupList[i]['monthDay'] == now.day.toString()) {
+          checkIsItCurrentTime(now, groupList[i]['startTime'],
+              groupList[i]['endTime'], groupList[i]['id']);
+        }
+      }
+    }
+  }
+
+  checkIsItCurrentTime(
+      DateTime nw, String startTime, String endTime, String groupId) {
+    int nowStr = int.parse('${nw.hour}${nw.minute}');
+    String a = startTime.replaceAll(":", "");
+    int start = int.parse(startTime.replaceAll(":", ""));
+    int end = int.parse(endTime.replaceAll(":", ""));
+    if (nowStr > start && nowStr < end) {
+      chosenGroupId = groupId;
+      readSequenceItems();
+      StaticHelpers.homeMiddleAreaType.value = 'packagedHabits';
+    }
+  }
 
   Map<String, dynamic> sequenceGroupData(String id) {
     Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
     data['name'] = groupTxt.text;
-    data['upperthat'] = 5;
-    data['downerthat'] = 7;
+    data['startTime'] = startTime.text;
+    data['endTime'] = endTime.text;
+    data['repeatType'] = type ;
+    data['weeklyDays'] = weekday;
+    data['monthDay'] =
+        monthDay.isEmpty ? '' : monthDay.substring(monthDay.length - 2);
     return data;
   }
 
@@ -270,6 +298,15 @@ class SequenceCont extends GetxController {
     importancy.clear();
     seqnumber.clear();
     isMoveable = false;
+  }
+
+  clearSequenceGroupfields() {
+    groupTxt.clear();
+    startTime.clear();
+    endTime.clear();
+    type = '';
+    weekday.clear();
+    monthDay = '';
   }
 
   dayHabitProgress(String theday) async {
@@ -330,20 +367,34 @@ class SequenceCont extends GetxController {
   /// sequence iin biyleltiig haruulsan bool list
   RxList isDone = [].obs;
 
-  TextEditingController groupTxt = TextEditingController();
-  TextEditingController chosenDate = TextEditingController();
-  TextEditingController chosenTime = TextEditingController();
+  /// sequence repeat type
+  String type = '';
 
+  /// хэрвээ 7 хоногоор гэж сонгосон бол давтагдах өдрүүдийн жагсаалт
+  List<int> weekday = [];
+
+  /// сараар гэж сонгосон бол сард давтагдах өдөр нь
+  String monthDay = '';
+
+  /// sequence name
+  TextEditingController groupTxt = TextEditingController();
+
+  /// тухайн sequence ийн ил болох цаг
+  TextEditingController startTime = TextEditingController();
+
+  /// тухайн sequence ийн дуусах цаг
+  TextEditingController endTime = TextEditingController();
+
+  /// progress дээр бичигдэх habit ын эхэлсэн цаг
   TextEditingController stardedtimeofHabit = TextEditingController();
+
+  /// progress дээр бичигдэх habit ын дууссан цаг
   TextEditingController finfishedtimeofHabit = TextEditingController();
 
   RxList groupList = [].obs;
-
   RxList progressList = [].obs;
   List progressEntries = [];
-
   TextEditingController successPointofHabit = TextEditingController();
-
   RxList dayProgress = [].obs;
   List ifThere = [];
 

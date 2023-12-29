@@ -53,6 +53,16 @@ class _SequencesState extends State<Sequences> {
                         littleCont.chosenGroupId =
                             littleCont.groupList[i]['id'];
                         cont.groupTxt.text = littleCont.groupList[i]['name'];
+                        cont.startTime.text =
+                            littleCont.groupList[i]['startTime'];
+                        cont.endTime.text = littleCont.groupList[i]['endTime'];
+                        cont.type = littleCont.groupList[i]['repeatType'];
+                        List a = littleCont.groupList[i]['weeklyDays']?? [];
+                        cont.weekday.clear();
+                        for (int i = 0; i < a.length; i++) {
+                          cont.weekday.add(a[i]);
+                        }
+                        cont.monthDay = littleCont.groupList[i]['monthDay'];
                         setState(() {
                           editvisible = true;
                         });
@@ -103,7 +113,7 @@ class _SequencesState extends State<Sequences> {
                               onTap: () async {
                                 await cont.readSequenceItems();
 
-                                taskCont.homeMiddleAreaType.value =
+                                StaticHelpers.homeMiddleAreaType.value =
                                     'packagedHabits';
 
                                 Get.back();
@@ -192,8 +202,6 @@ Object sequenceGroupGate(
     BuildContext conte, TextEditingController txtCont, Function func) {
   TimeHelper timeHelper = TimeHelper();
   bool isRepeatable = false;
-  String type = 'weekly';
-  List<int> weekday = [];
 
   final cont = Get.find<SequenceCont>();
 
@@ -220,9 +228,9 @@ Object sequenceGroupGate(
                         },
                         child: Container(
                           width: 80,
-                          height:20,
+                          height: 20,
                           decoration: BoxDecoration(
-                              gradient: title == type
+                              gradient: title == cont.type
                                   ? MyColors.helperPink
                                   : const LinearGradient(colors: [
                                       Colors.white,
@@ -232,7 +240,7 @@ Object sequenceGroupGate(
                                   const BorderRadius.all(Radius.circular(10)),
                               border: Border.all(width: 1.5)),
                         )),
-                        const SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(title)
                   ],
                 ));
@@ -288,13 +296,13 @@ Object sequenceGroupGate(
                                               TextField(
                                                 enabled: false,
                                                 textAlign: TextAlign.center,
-                                                controller: cont.chosenTime,
+                                                controller: cont.startTime,
                                               ), () async {
                                             String incomingValue =
                                                 await timeHelper
                                                     .selectTime(conte);
                                             if (incomingValue.isNotEmpty) {
-                                              cont.chosenTime.text =
+                                              cont.startTime.text =
                                                   incomingValue;
                                             }
                                           }),
@@ -303,14 +311,13 @@ Object sequenceGroupGate(
                                               TextField(
                                                 enabled: false,
                                                 textAlign: TextAlign.center,
-                                                controller: cont.chosenTime,
+                                                controller: cont.endTime,
                                               ), () async {
                                             String incomingValue =
                                                 await timeHelper
                                                     .selectTime(conte);
                                             if (incomingValue.isNotEmpty) {
-                                              cont.chosenTime.text =
-                                                  incomingValue;
+                                              cont.endTime.text = incomingValue;
                                             }
                                           })
                                         ],
@@ -323,13 +330,12 @@ Object sequenceGroupGate(
                                             MainAxisAlignment.spaceAround,
                                         children: [
                                           myRadiobutton('weekly', () async {
-                                            type = 'weekly';
+                                            cont.type = 'weekly';
                                           }),
-                                          myRadiobutton('monthly', () async{
-                                            type = 'monthly';
-                                               String incomingValue =
-                                                await timeHelper
-                                                    .selectDate(conte);
+                                          myRadiobutton('monthly', () async {
+                                            cont.type = 'monthly';
+                                            cont.monthDay = await timeHelper
+                                                .selectDate(conte);
                                           }),
                                         ],
                                       ),
@@ -348,13 +354,13 @@ Object sequenceGroupGate(
                                                 onTap: () {
                                                   setstate(() {
                                                     {
-                                                      if(weekday.contains(i)){
-                                                         weekday.remove(i);
-                                                      }else
-                                                      {
-                                                         weekday.add(i);
+                                                      if (cont.weekday
+                                                          .contains(i + 1)) {
+                                                        cont.weekday
+                                                            .remove(i + 1);
+                                                      } else {
+                                                        cont.weekday.add(i + 1);
                                                       }
-                                                     
                                                     }
                                                   });
                                                 },
@@ -363,7 +369,8 @@ Object sequenceGroupGate(
                                                   margin:
                                                       const EdgeInsets.all(5),
                                                   decoration: BoxDecoration(
-                                                      gradient: weekday.contains(i)
+                                                      gradient: cont.weekday
+                                                              .contains(i + 1)
                                                           ? MyColors.helperPink
                                                           : const LinearGradient(
                                                               colors: [
@@ -379,8 +386,14 @@ Object sequenceGroupGate(
                                                                   5))),
                                                   width: 30,
                                                   height: 30,
-                                                  child:
-                                                      Text((i + 1).toString(), style: TextStyle(color: weekday.contains(i)? Colors.white : Colors.black),),
+                                                  child: Text(
+                                                    (i + 1).toString(),
+                                                    style: TextStyle(
+                                                        color: cont.weekday
+                                                                .contains(i + 1)
+                                                            ? Colors.white
+                                                            : Colors.black),
+                                                  ),
                                                 ),
                                               );
                                             }),

@@ -57,14 +57,14 @@ class _DashLandingState extends State<DashLanding> {
     noteCont.path = "${StaticHelpers.userInfo!.uid}/note/notes";
     noteCont.labelpath = "${StaticHelpers.userInfo!.uid}/note/labels";
     langCont.path = "${StaticHelpers.userInfo!.uid}/erek_language/langs";
-    habitCont.path = "${StaticHelpers.userInfo!.uid}/habit/habits";
+    habitCont.path = "${StaticHelpers.userInfo!.uid}/sequences/items";
     habitCont.progresspath = "${StaticHelpers.userInfo!.uid}/habits_journal";
-    habitCont.groupPath = "${StaticHelpers.userInfo!.uid}/habit/groups";
+    habitCont.groupPath = "${StaticHelpers.userInfo!.uid}/sequences/groups";
     taskCont.path = "${StaticHelpers.userInfo!.uid}/tasks";
     ideaStreamCont.getAllNewIdeas();
     taskCont.getAllTask();
+    
     habitCont.readSequenceGroups();
-    habitCont.readSequenceItems();
     productivityCont.getCurrentDay(GlobalValues.nowStrShort);
     boxCont.allBoxes();
   }
@@ -295,7 +295,7 @@ class _DashLandingState extends State<DashLanding> {
                 taskCont.boxId = boxContlittle.entryNames[i];
                 taskCont.boxName = boxContlittle.boxList[i]['boxname'];
                 taskCont.getBoxTasks(boxContlittle.entryNames[i]);
-                taskCont.homeMiddleAreaType.value = boxContlittle.entryNames[i];
+                StaticHelpers.homeMiddleAreaType.value = boxContlittle.entryNames[i];
               },
               onDoubleTap: () {
                 Get.to(() => TheBox(
@@ -352,7 +352,7 @@ class _DashLandingState extends State<DashLanding> {
                     borderRadius: BorderRadius.all(Radius.circular(15))),
                 child: InkWell(
                   onTap: () {
-                    switch (littleCont.homeMiddleAreaType.value) {
+                    switch (StaticHelpers.homeMiddleAreaType.value) {
                       case "now":
                         Get.to(() => TaskGateNow());
                         break;
@@ -376,39 +376,39 @@ class _DashLandingState extends State<DashLanding> {
                 ),
               ),
             ),
-            erekBtn('value', littleCont.homeMiddleAreaType.value == "value",
+            erekBtn('value', StaticHelpers.homeMiddleAreaType.value == "value",
                 () {
               taskCont.clearValues();
               taskCont.getBoxTasks('value');
-              littleCont.homeMiddleAreaType.value = 'value';
+              StaticHelpers.homeMiddleAreaType.value = 'value';
             }),
-            erekBtn('now', littleCont.homeMiddleAreaType.value == "now", () {
+            erekBtn('now', StaticHelpers.homeMiddleAreaType.value == "now", () {
               taskCont.clearValues();
               taskCont.getBoxTasks('now');
-              littleCont.homeMiddleAreaType.value = 'now';
+              StaticHelpers.homeMiddleAreaType.value = 'now';
             }),
-            erekBtn('outer', littleCont.homeMiddleAreaType.value == "outer",
+            erekBtn('outer', StaticHelpers.homeMiddleAreaType.value == "outer",
                 () {
               taskCont.clearValues();
               taskCont.getBoxTasks('');
-              littleCont.homeMiddleAreaType.value = 'outer';
+              StaticHelpers.homeMiddleAreaType.value = 'outer';
             }),
             erekBtn(
-                'allTasks', littleCont.homeMiddleAreaType.value == 'allTasks',
+                'allTasks', StaticHelpers.homeMiddleAreaType.value == 'allTasks',
                 () {
               taskCont.clearValues();
               taskCont.getAllTask();
-              littleCont.homeMiddleAreaType.value = 'allTasks';
+              StaticHelpers.homeMiddleAreaType.value = 'allTasks';
             }),
           ]),
           Expanded(
               flex: 7,
               child: SingleChildScrollView(
-                child: littleCont.homeMiddleAreaType.value == 'allTasks' ||
-                        littleCont.homeMiddleAreaType.value == 'outer' ||
-                        littleCont.homeMiddleAreaType.value == 'now'
+                child: StaticHelpers.homeMiddleAreaType.value == 'allTasks' ||
+                        StaticHelpers.homeMiddleAreaType.value == 'outer' ||
+                        StaticHelpers.homeMiddleAreaType.value == 'now'
                     ? const TaskList()
-                    : littleCont.homeMiddleAreaType.value == 'packagedHabits'
+                    : StaticHelpers.homeMiddleAreaType.value == 'packagedHabits'
                         ? const RunningSequence()
                         : const TaskList(),
               )),

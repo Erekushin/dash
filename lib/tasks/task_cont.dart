@@ -12,7 +12,7 @@ class TaskCont extends GetxController {
   TimeHelper timeHelper = TimeHelper();
   RxBool loadingVis = false.obs;
 
-  RxString homeMiddleAreaType = 'allTasks'.obs;
+  
 
   List allActiveTasks = [];
   RxList taskList = [].obs;
@@ -41,15 +41,15 @@ class TaskCont extends GetxController {
             'value': values[i],
           });
         }
-        if (homeMiddleAreaType.value == 'allTasks') {
+        if (StaticHelpers.homeMiddleAreaType.value == 'allTasks') {
           taskList.value = allActiveTasks;
           calculateTimeValue(taskList);
-        } else if (homeMiddleAreaType.value == 'now') {
+        } else if (StaticHelpers.homeMiddleAreaType.value == 'now') {
           getBoxTasks('now');
-        } else if (homeMiddleAreaType.value == 'outer') {
+        } else if (StaticHelpers.homeMiddleAreaType.value == 'outer') {
           getBoxTasks('');
         } else {
-          getBoxTasks(homeMiddleAreaType.value);
+          getBoxTasks(StaticHelpers.homeMiddleAreaType.value);
         }
       } else {
         taskList.clear();
@@ -135,7 +135,7 @@ class TaskCont extends GetxController {
     if (i > 10) {
       importancy.text = '10';
     }
-    if (homeMiddleAreaType.value == 'now') {
+    if (StaticHelpers.homeMiddleAreaType.value == 'now') {
       boxId = 'now';
     }
     data['task'] = txtCnt.text;
