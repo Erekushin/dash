@@ -38,7 +38,7 @@ class SecurityCont extends GetxController {
 getIn() async {
   try {
     DatabaseEvent a = await StaticHelpers.databaseReference
-        .child("${StaticHelpers.userInfo!.uid}/name")
+        .child("users/${StaticHelpers.userInfo!.uid}/tasks")
         .once();
     if (!a.snapshot.exists) {
       registerUser();

@@ -1,9 +1,11 @@
+import 'dart:io';
+
 import 'package:erek_dash/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
-import '../boxes/boxcont.dart';
 import 'task_cont.dart';
 import '../helpers/time.dart';
 import '../widgets/buttons.dart';
@@ -28,8 +30,7 @@ class Task extends StatefulWidget {
 
 class _TaskState extends State<Task> {
   final cont = Get.find<TaskCont>();
-  final boxCont = Get.find<BoxCont>();
-
+    File? _image;
   TimeHelper timeHelper = TimeHelper();
 
   @override
@@ -62,6 +63,63 @@ class _TaskState extends State<Task> {
                   ),
                 ),
               ),
+                Container(
+             margin:
+                  const EdgeInsets.only(left: 40, right: 40, top: 5, bottom: 5),
+                            height: 150,
+                            child: InkWell(
+                              onTap: () async {
+                                final picker = ImagePicker();
+                                final pickedFile = await picker.pickImage(
+                                    source: ImageSource.gallery);
+
+                                if (pickedFile != null) {
+                                  _image = File(pickedFile.path);
+                                  final imageBytes =
+                                      await pickedFile.readAsBytes();
+                                  cont.boxImg.insert(0, imageBytes);
+                                }
+                                setState(() {});
+                              },
+                              child: Card(
+                                color: const Color.fromARGB(255, 255, 255, 255),
+                                shadowColor: Colors.transparent,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Center(
+                                    child: _image != null
+                                        ? Image.file(
+                                            _image!,
+                                            width: 200,
+                                            height: 200,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : widget.item['imgPath'] != ''? Container(
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                            image: NetworkImage(widget.item['imgPath']),
+                            fit: BoxFit.cover)
+                                          ),
+                                        ) : Stack(children: [
+                                            Container(
+                                              decoration: const BoxDecoration(
+                                                  image: DecorationImage(
+                                                      image: AssetImage(
+                                                          'assets/images/imagedefault.png'))),
+                                            ),
+                                            const Center(
+                                              child: Icon(
+                                                Icons.add,
+                                                size: 60,
+                                                color: Colors.grey,
+                                              ),
+                                            )
+                                          ]),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
               Container(
                 height: 120,
                 decoration: const BoxDecoration(
@@ -70,9 +128,10 @@ class _TaskState extends State<Task> {
                 margin: const EdgeInsets.only(
                     left: 40, right: 40, top: 5, bottom: 5),
                 padding: const EdgeInsets.all(10),
-                child: const TextField(
+                child:  TextField(
+                  controller: cont.description,
                   maxLines: null, // Set maxLines to null for multiline support
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'description... ',
                     border: InputBorder.none,
                   ),
@@ -183,16 +242,17 @@ class _TaskState extends State<Task> {
                                               child: ListView.builder(
                                                   shrinkWrap: true,
                                                   itemCount:
-                                                      boxCont.boxList.length,
+                                                      cont.boxList.length,
                                                   itemBuilder: (c, i) {
                                                     return InkWell(
                                                       onTap: () {
                                                         setState(() {
                                                           widget.selectedLabelname = cont.boxName = 
-                                                              boxCont.boxList[i]
+                                                              cont.boxList[i]
                                                                   ['boxname'];
                                                         });
-                                                            cont.boxId = boxCont.entryNames[i]; 
+                                                            cont.boxId = cont.boxList[i]
+                                                                  ['id']; 
                                                         Get.back();
                                                       },
                                                       child: Container(
@@ -213,7 +273,7 @@ class _TaskState extends State<Task> {
                                                               color:
                                                                   Colors.black),
                                                           child: Text(
-                                                            boxCont.boxList[i]
+                                                            cont.boxList[i]
                                                                 ['boxname'],
                                                             style:
                                                                 const TextStyle(
@@ -256,18 +316,17 @@ class _TaskState extends State<Task> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         standartBtn('save new values', () {
-                          cont.updatedTime = GlobalValues.nowStr;
-                          cont.updateTask(widget.id);
+                          cont.updateTask(widget.id, widget.item['imgPath']);
                         }),
                         const SizedBox(width: 5),
                         standartBtn('Nailed It', () {
                           cont.doneIt = 1;
                           cont.finishedTime = GlobalValues.nowStrShort;
-                          cont.updateTask(widget.id);
+                          cont.updateTask(widget.id, widget.item['imgPath']);
                         }),
                         IconButton(
                             onPressed: () {
-                              cont.deleteTask(widget.id);
+                              cont.deleteTask(widget.id, widget.item['imgPath']);
                             },
                             icon: const Icon(
                               Icons.delete,

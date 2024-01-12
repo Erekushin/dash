@@ -97,7 +97,11 @@ class InfoEdit extends StatelessWidget {
                                         case 'task':
                                           taskCont.txtCnt.text =
                                               cont.ideaTxtCnt.text;
+                                          var item;
+                                          item['initialTaskId'] = "LastTask";
+                                          item['step'] = 1;
                                           Get.off(() => TaskGate(
+                                                item: item,
                                                 incomingIsMoving: true,
                                               ));
                                           break;

@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -6,15 +9,19 @@ import '../globals.dart';
 import '../widgets/snacks.dart';
 
 class SequenceCont extends GetxController {
-//#region sequence group CRUD
+//#region sequence group CRUD---------------------------------------------------
 
   createSequenceGroup() async {
     try {
       String id = StaticHelpers.id;
+      String imgId = StaticHelpers.id;
+      if (boxImg.isNotEmpty) {
+        imgPath = await uplodImage(imgId, groupTxt.text);
+      }
       if (groupTxt.text.isNotEmpty) {
         StaticHelpers.databaseReference
             .child('$groupPath/$id')
-            .set(sequenceGroupData(id))
+            .set(sequenceGroupData(id, imgPath))
             .whenComplete(() {
           readSequenceGroups();
           clearSequenceGroupfields();
@@ -27,8 +34,15 @@ class SequenceCont extends GetxController {
 
   readSequenceGroups() async {
     try {
+         Query b = StaticHelpers.databaseReference
+      
+          .child(groupPath)
+          .orderByChild('type')
+          .equalTo(
+            'habit',
+          );
       DatabaseEvent a =
-          await StaticHelpers.databaseReference.child(groupPath).once();
+          await b.once();
       if (a.snapshot.exists) {
         Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
         groupList.value = data.values.toList();
@@ -45,7 +59,7 @@ class SequenceCont extends GetxController {
     try {
       StaticHelpers.databaseReference
           .child('$groupPath/$id')
-          .set(sequenceGroupData(id))
+          .set(sequenceGroupData(id, imgPath))
           .whenComplete(() {
         readSequenceGroups();
         groupTxt.clear();
@@ -71,9 +85,9 @@ class SequenceCont extends GetxController {
     }
   }
 
-//#endregion sequence group CRUD
+//#endregion sequence group CRUD -----------------------------------------------
 
-//#region sequence item CRUD
+//#region sequence item CRUD----------------------------------------------------
 
   insertSequenceItem() async {
     if (habitTxtCnt.text.isNotEmpty) {
@@ -145,9 +159,9 @@ class SequenceCont extends GetxController {
     }
   }
 
-//#endregion sequence item CRUD
+//#endregion sequence item CRUD -----------------------------------------------
 
-//#region habit progression CRUD
+//#region habit progression CRUD-------------------------------------------------
 
   createHabitProgress(String habitName, String habitId) async {
     await checkIfThereSameProgress(habitId);
@@ -221,9 +235,9 @@ class SequenceCont extends GetxController {
     }
   }
 
-//#endregion habit progression CRUD
+//#endregion habit progression CRUD---------------------------------------------
 
-//#region helpers
+//#region helpers---------------------------------------------------------------
 
   checkIsItCurrentGroup() {
     DateTime now = DateTime.now();
@@ -258,13 +272,16 @@ class SequenceCont extends GetxController {
     }
   }
 
-  Map<String, dynamic> sequenceGroupData(String id) {
+  Map<String, dynamic> sequenceGroupData(String id, String imgPath) {
     Map<String, dynamic> data = <String, dynamic>{};
+    data['type'] = 'habit';
+    data['discription'] = discripctionTxt.text;
+    data['imgPath'] = imgPath;
     data['id'] = id;
     data['name'] = groupTxt.text;
     data['startTime'] = startTime.text;
     data['endTime'] = endTime.text;
-    data['repeatType'] = type ;
+    data['repeatType'] = type;
     data['weeklyDays'] = weekday;
     data['monthDay'] =
         monthDay.isEmpty ? '' : monthDay.substring(monthDay.length - 2);
@@ -333,9 +350,27 @@ class SequenceCont extends GetxController {
     }
   }
 
-//#endregion helpers
+  /// Зургийн firebase storage дээр хадаглах func
+  Future uplodImage(String productId, String imgName) async {
+    final storage = FirebaseStorage.instance;
+    final metaData = SettableMetadata(contentType: 'image/png');
 
-//#region variables
+    final reference = storage
+        .ref()
+        .child('${StaticHelpers.userInfo!.uid}/box_pics/$productId')
+        .child(imgName);
+    UploadTask uploadTask = reference.putData(boxImg[0], metaData);
+    TaskSnapshot snapShot = await uploadTask.whenComplete(() {
+      boxImg.clear();
+      print('proccess complited');
+    });
+    final imageUrl = await snapShot.ref.getDownloadURL();
+    return imageUrl;
+  }
+
+//#endregion helpers------------------------------------------------------------
+
+//#region variables-------------------------------------------------------------
 
   /// firebase realtime database deerh swequence iin zam
   String path = '';
@@ -391,6 +426,15 @@ class SequenceCont extends GetxController {
   /// progress дээр бичигдэх habit ын дууссан цаг
   TextEditingController finfishedtimeofHabit = TextEditingController();
 
+  /// тайлбар
+  TextEditingController discripctionTxt = TextEditingController();
+
+  /// зургийн замыг хадаглах str
+  String imgPath = '';
+
+  /// зургийг Uint8List хэлбэрээр агуулах
+  RxList<Uint8List> boxImg = <Uint8List>[].obs;
+
   RxList groupList = [].obs;
   RxList progressList = [].obs;
   List progressEntries = [];
@@ -398,5 +442,5 @@ class SequenceCont extends GetxController {
   RxList dayProgress = [].obs;
   List ifThere = [];
 
-//#endregion variables
+//#endregion variables----------------------------------------------------------
 }

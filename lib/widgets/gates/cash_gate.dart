@@ -25,7 +25,7 @@ Object cashGate(BuildContext conte) {
                 cont.boxId = 'value';
                 cont.startingDate.text = cont.pinnedDate.text;
                 cont.startingTime.text = cont.pinnedTime.text;
-                cont.insertTask(false);
+                cont.createTask(false);
                 Navigator.of(conte).pop();
               },
               child: Scaffold(

@@ -93,11 +93,11 @@ class _CompletedTasksState extends State<CompletedTasks> {
                             standartBtn('undo it', () {
                               littleCont.doneIt = 0;
                               littleCont.finishedTime = "";
-                              littleCont.updateTask(chosenId);
+                              
                             }),
                             IconButton(
                                 onPressed: () {
-                                  littleCont.deleteTask(chosenId);
+                                  print('archive iig bvvr shichleh bogood vvsgeltiin gate ee bas tavichhii');
                                   littleCont.getAllCompleted();
                                   editVis.value = false;
                                 },

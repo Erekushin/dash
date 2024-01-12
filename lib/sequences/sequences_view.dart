@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:erek_dash/globals.dart';
 import 'package:erek_dash/tasks/task_cont.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../helpers/time.dart';
 import '../widgets/snacks.dart';
@@ -57,6 +60,7 @@ class _SequencesState extends State<Sequences> {
                             littleCont.groupList[i]['startTime'];
                         cont.endTime.text = littleCont.groupList[i]['endTime'];
                         cont.type = littleCont.groupList[i]['repeatType'];
+                        cont.imgPath = littleCont.groupList[i]['imgPath'];
                         List a = littleCont.groupList[i]['weeklyDays']?? [];
                         cont.weekday.clear();
                         for (int i = 0; i < a.length; i++) {
@@ -202,6 +206,7 @@ Object sequenceGroupGate(
     BuildContext conte, TextEditingController txtCont, Function func) {
   TimeHelper timeHelper = TimeHelper();
   bool isRepeatable = false;
+    File? _image;
 
   final cont = Get.find<SequenceCont>();
 
@@ -260,7 +265,7 @@ Object sequenceGroupGate(
                     child: ListView(
                       shrinkWrap: true,
                       children: [
-                        SizedBox(
+                         SizedBox(//name
                           height: 80,
                           child: Card(
                             color: Colors.white,
@@ -278,6 +283,77 @@ Object sequenceGroupGate(
                             ),
                           ),
                         ),
+                       
+                          SizedBox(//discription
+                            height: 150,
+                            child: Card(
+                              color: const Color.fromARGB(255, 255, 255, 255),
+                              shadowColor: Colors.transparent,
+                              child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: TextField(
+                                  controller: cont.discripctionTxt,
+                                  maxLines:
+                                      null, // Set maxLines to null for multiline support
+                                  decoration: const InputDecoration(
+                                      hintText: 'Discription',
+                                      border: InputBorder.none),
+                                ),
+                              ),
+                            ),
+                          ),
+                         
+                          SizedBox(//image picker
+                            height: 150,
+                            child: InkWell(
+                              onTap: () async {
+                                final picker = ImagePicker();
+                                final pickedFile = await picker.pickImage(
+                                    source: ImageSource.gallery);
+
+                                if (pickedFile != null) {
+                                  _image = File(pickedFile.path);
+                                  final imageBytes =
+                                      await pickedFile.readAsBytes();
+                                  cont.boxImg.insert(0, imageBytes);
+                                }
+                                setstate(() {});
+                              },
+                              child: Card(
+                                color: const Color.fromARGB(255, 255, 255, 255),
+                                shadowColor: Colors.transparent,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Center(
+                                    child: _image != null
+                                        ? Image.file(
+                                            _image!,
+                                            width: 200,
+                                            height: 200,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Stack(children: [
+                                            Container(
+                                              decoration: const BoxDecoration(
+                                                  image: DecorationImage(
+                                                      image: AssetImage(
+                                                          'assets/images/imagedefault.png'))),
+                                            ),
+                                            const Center(
+                                              child: Icon(
+                                                Icons.add,
+                                                size: 60,
+                                                color: Colors.grey,
+                                              ),
+                                            )
+                                          ]),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        
+                       
                         Visibility(
                           visible: isRepeatable,
                           child: SizedBox(

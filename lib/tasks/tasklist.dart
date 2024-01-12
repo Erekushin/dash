@@ -18,7 +18,6 @@ class _TaskListState extends State<TaskList> {
   final cont = Get.find<TaskCont>();
   @override
   void initState() {
-    cont.getAllTask();
     super.initState();
   }
 
@@ -28,17 +27,17 @@ class _TaskListState extends State<TaskList> {
       builder: (littleCont) {
         return ListView.builder(
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: littleCont.taskList.length,
+            itemCount: littleCont.lightTasks.length,
             shrinkWrap: true,
             itemBuilder: (c, index) {
-              var item = littleCont.taskList[index]['value'];
+              var item = littleCont.lightTasks[index];
               return InkWell(
                 onTap: () {
                   littleCont.setValues(item);
 
                   Get.to(() => Task(
                         item: item,
-                        id: cont.taskList[index]['id'],
+                        id: cont.lightTasks[index]['id'],
                         selectedLabelid: item['boxId'] ?? 0,
                         selectedLabelname: item['boxname'] ?? '',
                       ));

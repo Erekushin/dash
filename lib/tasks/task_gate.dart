@@ -1,29 +1,38 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
-import '../boxes/boxcont.dart';
 import '../helpers/time.dart';
 import '../widgets/widget_tools.dart';
 import 'task_cont.dart';
 
 // ignore: must_be_immutable
 class TaskGate extends StatefulWidget {
-  TaskGate({super.key, required this.incomingIsMoving});
+  TaskGate({super.key, required this.item, required this.incomingIsMoving});
   bool incomingIsMoving;
+  var item;
   @override
   State<TaskGate> createState() => _TaskGateState();
 }
 
 class _TaskGateState extends State<TaskGate> {
   final cont = Get.find<TaskCont>();
-  final boxCont = Get.find<BoxCont>();
+
   TimeHelper timeHelper = TimeHelper();
+  File? _image;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        cont.insertTask(widget.incomingIsMoving);
+        cont.createTask(widget.incomingIsMoving);
+        //sub task үүсгэж буй task маань level 1 тэй байх л юм бол
+        //level level ийн засварын ажиллагааг эхлүүлнэ.
+        if (widget.item['step'] == 1) {
+          cont.readParentTask(widget.item);
+        }
         Get.back();
       },
       child: Scaffold(
@@ -64,6 +73,56 @@ class _TaskGateState extends State<TaskGate> {
                 decoration: const InputDecoration(
                   hintText: 'description... ',
                   border: InputBorder.none,
+                ),
+              ),
+            ),
+            Container(
+              margin:
+                  const EdgeInsets.only(left: 40, right: 40, top: 5, bottom: 5),
+              height: 150,
+              child: InkWell(
+                onTap: () async {
+                  final picker = ImagePicker();
+                  final pickedFile =
+                      await picker.pickImage(source: ImageSource.gallery);
+
+                  if (pickedFile != null) {
+                    _image = File(pickedFile.path);
+                    final imageBytes = await pickedFile.readAsBytes();
+                    cont.boxImg.insert(0, imageBytes);
+                  }
+                  setState(() {});
+                },
+                child: Card(
+                  color: const Color.fromARGB(255, 255, 255, 255),
+                  shadowColor: Colors.transparent,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Center(
+                      child: _image != null
+                          ? Image.file(
+                              _image!,
+                              width: 200,
+                              height: 200,
+                              fit: BoxFit.cover,
+                            )
+                          : Stack(children: [
+                              Container(
+                                decoration: const BoxDecoration(
+                                    image: DecorationImage(
+                                        image: AssetImage(
+                                            'assets/images/imagedefault.png'))),
+                              ),
+                              const Center(
+                                child: Icon(
+                                  Icons.add,
+                                  size: 60,
+                                  color: Colors.grey,
+                                ),
+                              )
+                            ]),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -166,18 +225,16 @@ class _TaskGateState extends State<TaskGate> {
                                             height: 200,
                                             child: ListView.builder(
                                                 shrinkWrap: true,
-                                                itemCount:
-                                                    boxCont.boxList.length,
+                                                itemCount: cont.boxList.length,
                                                 itemBuilder: (c, i) {
                                                   return InkWell(
                                                     onTap: () {
                                                       setState(() {
-                                                        cont.boxName =
-                                                            boxCont.boxList[i]
-                                                                ['boxname'];
+                                                        cont.boxName = cont
+                                                            .boxList[i]['task'];
                                                       });
                                                       cont.boxId =
-                                                          boxCont.entryNames[i];
+                                                          cont.boxList[i]['id'];
                                                       Get.back();
                                                     },
                                                     child: Container(
@@ -197,8 +254,8 @@ class _TaskGateState extends State<TaskGate> {
                                                             color:
                                                                 Colors.black),
                                                         child: Text(
-                                                          boxCont.boxList[i]
-                                                              ['boxname'],
+                                                          cont.boxList[i]
+                                                              ['task'],
                                                           style:
                                                               const TextStyle(
                                                                   color: Colors
@@ -232,13 +289,12 @@ class TaskGateNow extends StatefulWidget {
 
 class _TaskGateNowState extends State<TaskGateNow> {
   final cont = Get.find<TaskCont>();
-  final boxCont = Get.find<BoxCont>();
   TimeHelper timeHelper = TimeHelper();
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        await cont.insertTask(false);
+        await cont.createTask(false);
         cont.boxId = "now";
         Get.back();
       },

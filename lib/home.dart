@@ -2,14 +2,12 @@ import 'package:erek_dash/dayproductivity/productivity_cont.dart';
 import 'package:erek_dash/sequences/running_sequence.dart';
 import 'package:erek_dash/sequences/sequence_cont.dart';
 import 'package:erek_dash/tasks/task_cont.dart';
+import 'package:erek_dash/tasks/thetask.dart';
 import 'package:erek_dash/widgets/gates.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'archived_screens.dart';
-import 'boxes/boxcont.dart';
-import 'boxes/boxlist.dart';
-import 'boxes/thebox.dart';
 import 'dayreview.dart';
 import 'idea_stream/idea_stream_cont.dart';
 import 'globals.dart';
@@ -22,6 +20,7 @@ import 'langs/langs.dart';
 import 'sequences/sequences_view.dart';
 import 'tasks/task_gate.dart';
 import 'tasks/tasklist.dart';
+import 'tasks/visionary_tasklist.dart';
 import 'widgets/buttons.dart';
 import 'widgets/gates/cash_gate.dart';
 
@@ -33,7 +32,6 @@ class DashLanding extends StatefulWidget {
 }
 
 class _DashLandingState extends State<DashLanding> {
-  final boxCont = Get.find<BoxCont>();
   final noteCont = Get.find<NoteCont>();
   final taskCont = Get.find<TaskCont>();
   final habitCont = Get.find<SequenceCont>();
@@ -49,7 +47,6 @@ class _DashLandingState extends State<DashLanding> {
   @override
   void initState() {
     super.initState();
-    boxCont.path = "${StaticHelpers.userInfo!.uid}/boxes";
     productivityCont.path =
         "${StaticHelpers.userInfo!.uid}/productivityduration";
     ideaStreamCont.path = "${StaticHelpers.userInfo!.uid}/streamOfIdeas";
@@ -59,14 +56,13 @@ class _DashLandingState extends State<DashLanding> {
     langCont.path = "${StaticHelpers.userInfo!.uid}/erek_language/langs";
     habitCont.path = "${StaticHelpers.userInfo!.uid}/sequences/items";
     habitCont.progresspath = "${StaticHelpers.userInfo!.uid}/habits_journal";
-    habitCont.groupPath = "${StaticHelpers.userInfo!.uid}/sequences/groups";
+    habitCont.groupPath = "${StaticHelpers.userInfo!.uid}/boxes";
     taskCont.path = "${StaticHelpers.userInfo!.uid}/tasks";
     ideaStreamCont.getAllNewIdeas();
-    taskCont.getAllTask();
-    
+    taskCont.readTasks();
+
     habitCont.readSequenceGroups();
     productivityCont.getCurrentDay(GlobalValues.nowStrShort);
-    boxCont.allBoxes();
   }
 
   @override
@@ -283,7 +279,7 @@ class _DashLandingState extends State<DashLanding> {
   }
 
   Widget boxList() {
-    return GetX<BoxCont>(builder: (boxContlittle) {
+    return GetX<TaskCont>(builder: (boxContlittle) {
       return ListView.builder(
           scrollDirection: Axis.horizontal,
           shrinkWrap: true,
@@ -291,28 +287,32 @@ class _DashLandingState extends State<DashLanding> {
           itemBuilder: (c, i) {
             var item = boxContlittle.boxList[i];
             return InkWell(
-              onTap: () {
-                taskCont.boxId = boxContlittle.entryNames[i];
-                taskCont.boxName = boxContlittle.boxList[i]['boxname'];
-                taskCont.getBoxTasks(boxContlittle.entryNames[i]);
-                StaticHelpers.homeMiddleAreaType.value = boxContlittle.entryNames[i];
+              onTap: () async{
+                taskCont.boxId = boxContlittle.boxList[i]['id'];
+                taskCont.boxName = boxContlittle.boxList[i]['task'];
+                taskCont.lightTasks.value = await taskCont.classifyBoxtasks(boxContlittle.boxList[i]['id'], taskCont.alllightTasks);
+                StaticHelpers.homeMiddleAreaType.value =
+                    boxContlittle.boxList[i]['id'];
               },
               onDoubleTap: () {
-                Get.to(() => TheBox(
+                taskCont.boxId = boxContlittle.boxList[i]['id'];
+                taskCont.boxName = boxContlittle.boxList[i]['task'];
+                // taskCont.getBoxTasks(boxContlittle.entryNames[i]);
+                taskCont.classifyTaskTree(boxContlittle.boxList[i]['id']);
+                Get.to(() => TheTask(
                       item: item,
-                      id: boxContlittle.entryNames[i],
                     ));
               },
               child: Container(
                 width: 150,
                 height: 120,
                 decoration: BoxDecoration(
-                    image: item['picture'] == ''
+                    image: item['imgPath'] == '' || item['imgPath'] == null
                         ? const DecorationImage(
                             image: AssetImage('assets/images/imagedefault.png'),
                             fit: BoxFit.cover)
                         : DecorationImage(
-                            image: NetworkImage(item['picture']),
+                            image: NetworkImage(item['imgPath']),
                             fit: BoxFit.cover),
                     color: Colors.white,
                     borderRadius: const BorderRadius.all(Radius.circular(15))),
@@ -326,7 +326,7 @@ class _DashLandingState extends State<DashLanding> {
                         color: Colors.white,
                         borderRadius: BorderRadius.all(Radius.circular(5))),
                     child: Text(
-                      item['boxname'],
+                      item['task'],
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -360,7 +360,13 @@ class _DashLandingState extends State<DashLanding> {
                         cashGate(context);
                         break;
                       default:
+                         var itemmmm = <String, dynamic>{};
+                         itemmmm['initialTaskId'] = "LastTask";
+                         itemmmm['step'] = 1;
+                         taskCont.initialTaskId = "LastTask";
+                         taskCont.step = 1;
                         Get.to(() => TaskGate(
+                              item: itemmmm,
                               incomingIsMoving: false,
                             ));
                     }
@@ -368,7 +374,7 @@ class _DashLandingState extends State<DashLanding> {
                   child: Center(child: GetX<TaskCont>(
                     builder: (littleCont) {
                       return Text(
-                        'there is ${littleCont.taskList.length} tasks',
+                        'there is ${littleCont.lightTasks.length} tasks',
                         style: const TextStyle(color: Colors.white),
                       );
                     },
@@ -377,27 +383,26 @@ class _DashLandingState extends State<DashLanding> {
               ),
             ),
             erekBtn('value', StaticHelpers.homeMiddleAreaType.value == "value",
-                () {
+                () async{
               taskCont.clearValues();
-              taskCont.getBoxTasks('value');
+              taskCont.lightTasks.value = await taskCont.classifyBoxtasks('value', taskCont.alllightTasks);
               StaticHelpers.homeMiddleAreaType.value = 'value';
             }),
-            erekBtn('now', StaticHelpers.homeMiddleAreaType.value == "now", () {
+            erekBtn('now', StaticHelpers.homeMiddleAreaType.value == "now", () async{
               taskCont.clearValues();
-              taskCont.getBoxTasks('now');
+              taskCont.lightTasks.value =await taskCont.classifyBoxtasks('now', taskCont.alllightTasks);
               StaticHelpers.homeMiddleAreaType.value = 'now';
             }),
             erekBtn('outer', StaticHelpers.homeMiddleAreaType.value == "outer",
-                () {
+                () async{
               taskCont.clearValues();
-              taskCont.getBoxTasks('');
+               taskCont.lightTasks.value = await taskCont.classifyBoxtasks('', taskCont.alllightTasks);
               StaticHelpers.homeMiddleAreaType.value = 'outer';
             }),
-            erekBtn(
-                'allTasks', StaticHelpers.homeMiddleAreaType.value == 'allTasks',
-                () {
+            erekBtn('allTasks',
+                StaticHelpers.homeMiddleAreaType.value == 'allTasks', () {
               taskCont.clearValues();
-              taskCont.getAllTask();
+              taskCont.readTasks();
               StaticHelpers.homeMiddleAreaType.value = 'allTasks';
             }),
           ]),

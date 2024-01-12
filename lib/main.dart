@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'boxes/boxcont.dart';
 import 'dayproductivity/productivity_cont.dart';
 import 'interestingideas/idea_cont.dart';
 import 'langs/lang_cont.dart';
@@ -68,7 +67,6 @@ class ErekDash extends StatelessWidget {
   bindInitialControllers() {
     Get.put(SecurityCont(), permanent: true);
     Get.put(IdeaStreamCont(), permanent: true);
-    Get.put(BoxCont(), permanent: true);
     Get.put(TaskCont(), permanent: true);
     Get.put(SequenceCont(), permanent: true);
     Get.put(NoteCont(), permanent: true);
