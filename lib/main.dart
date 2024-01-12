@@ -16,8 +16,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'sequences/sequence_cont.dart';
 
 void main() async {
-  //firebase version  4444
-  //check todo is working or not
+  //firebase version  erek
   if (kIsWeb) {
     WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp(
