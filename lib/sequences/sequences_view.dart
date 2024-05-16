@@ -206,7 +206,7 @@ Object sequenceGroupGate(
     BuildContext conte, TextEditingController txtCont, Function func) {
   TimeHelper timeHelper = TimeHelper();
   bool isRepeatable = false;
-    File? _image;
+    File? image;
 
   final cont = Get.find<SequenceCont>();
 
@@ -312,7 +312,7 @@ Object sequenceGroupGate(
                                     source: ImageSource.gallery);
 
                                 if (pickedFile != null) {
-                                  _image = File(pickedFile.path);
+                                  image = File(pickedFile.path);
                                   final imageBytes =
                                       await pickedFile.readAsBytes();
                                   cont.boxImg.insert(0, imageBytes);
@@ -325,9 +325,9 @@ Object sequenceGroupGate(
                                 child: Padding(
                                   padding: const EdgeInsets.all(10),
                                   child: Center(
-                                    child: _image != null
+                                    child: image != null
                                         ? Image.file(
-                                            _image!,
+                                            image!,
                                             width: 200,
                                             height: 200,
                                             fit: BoxFit.cover,

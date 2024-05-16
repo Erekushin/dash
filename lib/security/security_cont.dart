@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in_web/google_sign_in_web.dart';
 
 import '../widgets/snacks.dart';
 
@@ -35,39 +36,34 @@ class SecurityCont extends GetxController {
     }
   }
 
-getIn() async {
-  try {
-    DatabaseEvent a = await StaticHelpers.databaseReference
-        .child("users/${StaticHelpers.userInfo!.uid}/tasks")
-        .once();
-    if (!a.snapshot.exists) {
-      registerUser();
+  getIn() async {
+    try {
+      DatabaseEvent a = await StaticHelpers.databaseReference
+          .child(StaticHelpers.userInfo!.uid)
+          .once();
+      if (!a.snapshot.exists) {
+        registerUser();
+      }
+      loadingVis.value = false;
+      Get.to(() => const DashLanding());
+    } catch (e) {
+      print(e);
     }
-    loadingVis.value = false;
-    Get.to(() => const DashLanding());
-  } catch (e) {
-    print(e);
   }
-}
 
-registerUser() {
-  try {
-    StaticHelpers.databaseReference
-        .child('${StaticHelpers.userInfo!.uid}/name')
-        .set(StaticHelpers.userInfo!.displayName)
-        .whenComplete(() {
-      Snacks.savedSnack();
-    });
-  } catch (e) {
-    Snacks.errorSnack(e);
+  registerUser() {
+    try {
+      StaticHelpers.databaseReference
+          .child(StaticHelpers.userInfo!.uid)
+          .set(StaticHelpers.userInfo!.displayName)
+          .whenComplete(() {
+        Snacks.savedSnack();
+      });
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
   }
-}
 
-
-
-
-// uid aa avah process tusdaa negent avchih yum bol bvrtgvvleh esvel nevtreh gesen 
+// uid aa avah process tusdaa negent avchih yum bol bvrtgvvleh esvel nevtreh gesen
 // 2 songolt l bgaa tehee user bgaa vgvvg ni harah heregtei gesen vg
-
 }
-

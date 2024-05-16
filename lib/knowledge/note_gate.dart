@@ -4,15 +4,16 @@ import 'package:get/get.dart';
 import 'note_cont.dart';
 
 class NoteGate extends StatelessWidget {
-  NoteGate({super.key, required this.incomingIsMoving});
+  NoteGate({super.key, required this.incomingIsMoving, this.isUpdating});
   bool incomingIsMoving;
+  bool? isUpdating;
   final cont = Get.find<NoteCont>();
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        cont.insertNote(incomingIsMoving);
+        cont.createNote(incomingIsMoving, isUpdating?? false);
         Get.back();
       },
       child: Scaffold(
@@ -32,7 +33,7 @@ class NoteGate extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      flex: 1,
+                      flex: 2,
                       child: TextField(
                         controller: cont.noteTitle,
                         maxLines:
@@ -68,7 +69,7 @@ class NoteGate extends StatelessWidget {
                             items: [
                               for (var item in cont.labelList)
                                 DropdownMenuItem(
-                                  value: item['label'],
+                                  value: item['id'],
                                   child: Text(
                                     item['label'],
                                     style: const TextStyle(color: Colors.black),

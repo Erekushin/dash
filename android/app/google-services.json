@@ -31,6 +31,14 @@
           }
         },
         {
+          "client_id": "518470648235-e1s94ipk3ehv7vo410hgpcuc71m8supn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.erek_dash",
+            "certificate_hash": "f1f8965c923f339ed2a3e21f4c95417f4800e034"
+          }
+        },
+        {
           "client_id": "518470648235-dpa36bs76tonjf6ja4ovn9qvmdqk20h1.apps.googleusercontent.com",
           "client_type": 3
         }

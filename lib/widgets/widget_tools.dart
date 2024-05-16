@@ -11,7 +11,7 @@ Widget taskProperty(String title, Widget childWidget, Function func) {
           func();
         },
         child: Container(
-          height: 40,
+          height: 60,
           width: 130,
           margin: const EdgeInsets.all(5),
           decoration: BoxDecoration(

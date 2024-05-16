@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:erek_dash/security/login.dart';
 import 'package:erek_dash/security/security_cont.dart';
 import 'package:erek_dash/tasks/task_cont.dart';
+import 'package:erek_dash/value/value_cont.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,34 +19,26 @@ import 'sequences/sequence_cont.dart';
 
 void main() async {
   //firebase version  erek
-  if (kIsWeb) {
-    WidgetsFlutterBinding.ensureInitialized();
-    await Firebase.initializeApp(
-        options: const FirebaseOptions(
-            apiKey: "AIzaSyDhqXuEF2ExqRx_g4p2rjhP6JpCqp6bsno",
-            authDomain: "erek-dashboard.firebaseapp.com",
-            databaseURL:
-                "https://erek-dashboard-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "erek-dashboard",
-            storageBucket: "erek-dashboard.appspot.com",
-            messagingSenderId: "518470648235",
-            appId: "1:518470648235:web:0aa6818825019db0ead2ee",
-            measurementId: "G-N13TD279NY"));
-  } else {
-    if (Platform.isAndroid) {
-      WidgetsFlutterBinding.ensureInitialized();
-      await Firebase.initializeApp();
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
-    } else if (Platform.isIOS) {
-    } else if (Platform.isLinux) {
-    } else {
-    }
+  try {
+      if (Platform.isAndroid) {
+        WidgetsFlutterBinding.ensureInitialized();
+        await Firebase.initializeApp();
+        var a = await FirebaseAppCheck.instance.activate(
+          androidProvider: AndroidProvider.debug
+        );
+        
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+      } else if (Platform.isIOS) {
+      } else if (Platform.isLinux) {
+      } else {}
+  } catch (e) {
+    print("error during firebase initializeApp : $e");
   }
 
-  //TODO #3 
+  //TODO #3
   runApp(const ErekDash());
 }
 
@@ -55,14 +49,15 @@ class ErekDash extends StatelessWidget {
     return GetMaterialApp(
         theme: ThemeData(
             appBarTheme: AppBarTheme(
-               iconTheme: const IconThemeData(color: Colors.white),
-              titleTextStyle: const
-               TextStyle(color: Colors.white),
-                centerTitle: true, backgroundColor: MyColors.mainColor)),
+                iconTheme: const IconThemeData(color: Colors.white),
+                titleTextStyle: const TextStyle(color: Colors.white),
+                centerTitle: true,
+                backgroundColor: MyColors.mainColor)),
         initialBinding: BindingsBuilder(() => bindInitialControllers()),
         debugShowCheckedModeBanner: false,
         home: const Login());
   }
+
   bindInitialControllers() {
     Get.put(SecurityCont(), permanent: true);
     Get.put(IdeaStreamCont(), permanent: true);
@@ -72,5 +67,6 @@ class ErekDash extends StatelessWidget {
     Get.put(ProductivityCont(), permanent: true);
     Get.put(IdeaCont(), permanent: true);
     Get.put(LangCont(), permanent: true);
+    Get.put(ValueCont(), permanent: true);
   }
 }

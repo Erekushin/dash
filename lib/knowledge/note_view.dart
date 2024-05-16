@@ -21,7 +21,7 @@ class _NoteLabelState extends State<NoteLabel> {
 
   @override
   void initState() {
-    cont.allLabels();
+    cont.readLabels();
     super.initState();
   }
 
@@ -35,7 +35,7 @@ class _NoteLabelState extends State<NoteLabel> {
           Container(
             alignment: Alignment.center,
             width: 150,
-            height: 20,
+            height: 40,
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.only(left: 10, right: 10),
             decoration: BoxDecoration(
@@ -44,6 +44,7 @@ class _NoteLabelState extends State<NoteLabel> {
                 borderRadius: const BorderRadius.all(Radius.circular(15))),
             child: TextField(
               controller: cont.searchTxt,
+              style: const TextStyle(fontSize: 12),
               decoration: const InputDecoration(
                   border: InputBorder.none, hintText: 'search '),
             ),
@@ -60,7 +61,7 @@ class _NoteLabelState extends State<NoteLabel> {
                 itemBuilder: (c, i) {
                   return InkWell(
                     onTap: () {
-                      cont.chosenLabel.value = littleCont.labelList[i]['label'];
+                      cont.chosenLabel.value = littleCont.labelList[i]['id'];
                       Get.to(() => const Notes());
                     },
                     onLongPress: () {
@@ -87,19 +88,19 @@ class _NoteLabelState extends State<NoteLabel> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 editTool(editvisible, cont.labeltxt, () {
-                  cont.updatelabel(chosenId);
+                  cont.updateLabel(chosenId);
                   setState(() {
                     editvisible = false;
                   });
                 }, () {
-                  cont.deletelabel(chosenId);
+                  cont.deleteLabel(chosenId);
                   setState(() {
                     editvisible = false;
                   });
                 }),
                 addWhiteBtn(Icons.add, () {
                   productivityGate(context, "labelname", cont.labeltxt, () {
-                    cont.insertlabel();
+                    cont.createLabel();
                     Navigator.of(context).pop();
                   });
                 }),
@@ -125,7 +126,7 @@ class _NotesState extends State<Notes> with TickerProviderStateMixin {
   String chosenId = '';
   @override
   void initState() {
-    cont.labelNotes();
+    cont.readNotes();
     super.initState();
   }
 
@@ -194,14 +195,14 @@ class _NotesState extends State<Notes> with TickerProviderStateMixin {
                                                       .spaceBetween,
                                               children: [
                                                 Expanded(
-                                                  flex: 2,
+                                                  flex: 3,
                                                   child: Text(
                                                       item['created_time']
                                                           .toString()
                                                           .substring(0, 10)),
                                                 ),
                                                 Expanded(
-                                                  flex: 3,
+                                                  flex: 5,
                                                   child: Text(
                                                     item['title'],
                                                     style: const TextStyle(
@@ -210,12 +211,31 @@ class _NotesState extends State<Notes> with TickerProviderStateMixin {
                                                   ),
                                                 ),
                                                 Expanded(
-                                                  flex: 2,
-                                                  child: Text(
-                                                    item['label'],
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
+                                                  flex: 1,
+                                                  child: IconButton(
+                                                    onPressed: () {
+                                                      cont.setValues(item);
+                                                      Get.to(() => NoteGate(
+                                                            isUpdating: true,
+                                                            incomingIsMoving:
+                                                                false,
+                                                          ));
+                                                    },
+                                                    icon: const Icon(
+                                                        Icons.update),
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  flex: 1,
+                                                  child: IconButton(
+                                                    onPressed: () {
+                                                      cont.deleteNote(
+                                                          item['id']);
+                                                    },
+                                                    icon: const Icon(
+                                                      Icons.delete,
+                                                      color: Colors.red,
+                                                    ),
                                                   ),
                                                 ),
                                               ],

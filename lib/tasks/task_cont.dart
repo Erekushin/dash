@@ -12,9 +12,12 @@ import 'package:flutter_treeview/flutter_treeview.dart' as treeview;
 
 class TaskCont extends GetxController {
   //#region task CRUD ----------------------------------------------------------
-  Future createTask(bool movingIn) async {
-    if (txtCnt.text.isNotEmpty) {
-      try {
+
+  /// 1. Шаардлагатай үйлдлүүдээ хийгээд task аа хадаглана
+  /// 2. Parent task аа шалгаад хэрэгтэй бол update хийнэ.
+  createTask(bool movingIn) async {
+    try {
+      if (txtCnt.text.isNotEmpty) {
         loadingVis.value = true;
         String id = StaticHelpers.id;
         if (boxImg.isNotEmpty) {
@@ -24,50 +27,62 @@ class TaskCont extends GetxController {
             .child('$path/$id')
             .set(taskValues(id))
             .whenComplete(() async {
+          readParentTask();
           await readTasks();
           clearValues();
-          Get.back();
           if (movingIn) {
             ideaCont.deleteIdea(GlobalValues.movingIncomingIdeaId!);
           }
           Snacks.savedSnack();
         });
-      } catch (e) {
-        Snacks.errorSnack(e);
       }
+    } catch (e) {
+      Snacks.errorSnack(e);
     }
   }
 
-  Future readTasks() async {
+  readTasks() async {
     try {
       loadingVis.value = true;
       Query b = StaticHelpers.databaseReference
           .child(path)
-          .orderByChild('done_it')
+          .orderByChild('active')
           .equalTo(
-            0,
+            true,
           );
       DatabaseEvent a = await b.once();
       if (a.snapshot.exists) {
         Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
-        allUnComlitedTasks = data.values.toList();
-        alllightTasks = allUnComlitedTasks
-            .where((element) => element['step'] == 1)
-            .toList();
-        boxList.value = allUnComlitedTasks
+        activeTasks = data.values.toList();
+        List prealllight =
+            activeTasks.where((element) => element['step'] == 1).toList();
+        alllightTasks.clear();
+        boxList.value = activeTasks
             .where((element) =>
-                element['initialTaskId'] == "LastTask" &&
-                element['boxId'] == "" &&
+                (element['initialTaskId'] == "LastTask" ||
+                    element['initialTaskId'] == "") &&
                 element['importancy'] == "10")
             .toList();
+        for (Map<dynamic, dynamic> child in prealllight) {
+          // Check if there is a parent with a matching id
+          if (boxList.any((parent) => parent['id'] == child['boxId'])) {
+            alllightTasks.add(child);
+          }
+          if (child['boxId'] == "value") {
+            alllightTasks.add(child);
+          }
+        }
+
         if (StaticHelpers.homeMiddleAreaType.value == 'allTasks') {
           lightTasks.value = alllightTasks;
           calculateTimeValue(lightTasks);
-        } else if (StaticHelpers.homeMiddleAreaType.value == 'now') {
-          lightTasks.value = await classifyBoxtasks('now', alllightTasks);
-        } else if (StaticHelpers.homeMiddleAreaType.value == 'outer') {
-          lightTasks.value = await classifyBoxtasks('', alllightTasks);
-        } else {
+        } // else if (StaticHelpers.homeMiddleAreaType.value == 'now') {
+        //   lightTasks.value = await classifyBoxtasks('now', alllightTasks);
+        // } else if (StaticHelpers.homeMiddleAreaType.value == 'outer') {
+        //   lightTasks.value = await classifyBoxtasks('', alllightTasks);
+        //}
+        else {
+          // classifyTaskTree(StaticHelpers.homeMiddleAreaType.value);
           lightTasks.value = await classifyBoxtasks(
               StaticHelpers.homeMiddleAreaType.value, alllightTasks);
         }
@@ -96,13 +111,29 @@ class TaskCont extends GetxController {
         .set(taskValues(id))
         .whenComplete(() {
       readTasks();
-      Get.back();
       clearValues();
       Snacks.updatedSnack();
     });
   }
 
-  Future deleteTask(String id, String imgpath) async {
+  Future deleteTask(
+      String id, String imgpath, String boxid, String initialId) async {
+    //initialTaskId bhguu bol neg bol hog bna
+    // neg bol box tesk bna
+    //box task vgvvg ni shalgaaad hog bol zvgeer ustgachih ni
+    // box bol dotor ni bgaa bvh task uudiig bvgdiig ni step neg bolgood outer ruu hiine
+
+    //ustgaj bui item maani ooroo parent vgvvg ni shalgah
+    //parent bish bol ooriinh ni parent iig step 1 bolgoh
+    //parent bol ooriinh ni parent iin id iig subuudad ni ogoh
+    List boxTasks =
+        activeTasks.where((element) => element['boxId'] == boxid).toList();
+    var subs = checkSubs(id, boxTasks);
+    if (subs.isEmpty) {
+      //ooriinh ni parent iig step neg bolgoh
+    } else {
+      //childuudad ni ooriinh ni parentiin id iig initialId aar ogoh
+    }
     if (imgpath != '') {
       deleteImageFromStorage(imgpath);
     }
@@ -111,28 +142,133 @@ class TaskCont extends GetxController {
       Get.back();
     });
   }
+
   //#endregion task CRUD--------------------------------------------------------
+
+  //#region value CRUD----------------------------------------------------------
+  createValue() async {
+    boxId = 'value';
+    try {
+      if (txtCnt.text.isNotEmpty) {
+        loadingVis.value = true;
+        String id = StaticHelpers.id;
+        StaticHelpers.databaseReference
+            .child('$path/$id')
+            .set(taskValues(id))
+            .whenComplete(() async {
+          readValueList();
+          Snacks.savedSnack();
+        });
+      }
+    } catch (e) {
+      Snacks.errorSnack(e);
+    }
+  }
+
+  readValueList() async {
+    try {
+      Query b = StaticHelpers.databaseReference
+          .child(path)
+          .orderByChild('boxId')
+          .equalTo(
+            'value',
+          );
+      DatabaseEvent a = await b.once();
+      if (a.snapshot.exists) {
+        Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
+        lightTasks.value = data.values.toList();
+      } else {
+        lightTasks.clear();
+      }
+      loadingVis.value = false;
+    } catch (e) {
+      print('error: $e');
+    }
+  }
+
+  Future deleteValue(String id) async {
+    StaticHelpers.databaseReference.child("$path/$id").remove().then((_) {
+      readValueList();
+      Get.back();
+    });
+  }
+  //#endregion------------------------------------------------------------------
 
   //#region helpers-------------------------------------------------------------
 
+  Future accomplishTask(String id, String itsboxid, String initId) async {
+    try {
+      StaticHelpers.databaseReference
+          .child('$pathOfAccomplishments/$id')
+          .set(taskValues(id))
+          .whenComplete(() async {
+        deleteTask(id, '', itsboxid, initId);
+      });
+    } catch (e) {
+      print('error $e');
+    }
+  }
+
+  Future readAllBoxes() async {
+    try {
+      Query b = StaticHelpers.databaseReference
+          .child(path)
+          .orderByChild('importancy')
+          .equalTo(
+            "10",
+          );
+      DatabaseEvent a = await b.once();
+      if (a.snapshot.exists) {
+        Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
+        allBoxList.value = data.values
+            .toList()
+            .where((element) =>
+                element['initialTaskId'] == "LastTask" ||
+                element['initialTaskId'] == "")
+            .toList();
+      } else {
+        allBoxList.clear();
+      }
+    } catch (e) {
+      Snacks.errorSnack('during read all boxes : $e');
+    }
+  }
+
+  /// 1. [alllightTasks] аас boxId аар нь ялгаж аваад
+  /// 2.  calculate хийнэ.
+  Future<List<dynamic>> classifyBoxtasks(
+      String boxid, List<dynamic> incomingTasks) async {
+    List<dynamic> boxTasks = [];
+    try {
+      boxTasks =
+          incomingTasks.where((element) => element['boxId'] == boxid).toList();
+      boxTasks = calculateTimeValue(boxTasks);
+    } catch (e) {
+      Snacks.errorSnack('during classifyBoxtasks $e');
+    }
+    return boxTasks;
+  }
+
   /// box ийн task уудыг treeview дотор оруулах func
+  /// 1. Бүх task уудаас boxid аар нь ялгаж аваад
+  /// 2. Эхлээд keyStep үүд буюу тухайн project доторх parent алхамуудыг авна.
+  /// 3. давталтаар last step бүр дээр бүрэн угсрагдсан subtask list ийг өнгө
   Future classifyTaskTree(String boxid) async {
     try {
-      //бүх биелэгдээгүй task уудаас тухайн box ийнхийг ялгаж авна.
-      List boxTasks = await classifyBoxtasks(boxid, allUnComlitedTasks);
-      //тухайн box ын task уудаас Last step үүдийг ялгаж авна
-      List lastSteps = boxTasks
-          .where((element) => element['initialTaskId'] == 'LastTask')
+      List boxTasks =
+          activeTasks.where((element) => element['boxId'] == boxid).toList();
+      List keySteps = boxTasks
+          .where((element) =>
+              element['initialTaskId'] == boxid ||
+              element['initialTaskId'] == '')
           .toList();
-      //давталтаар нэмэх учир list ээ цэвэрлэнэ
       treeTasks.clear();
-      //давталтаар last step бүр дээр бүрэн угсрагдсан subtask list ийг өнгө
-      for (int i = 0; i < lastSteps.length; i++) {
+      for (int i = 0; i < keySteps.length; i++) {
         treeview.Node tasknode = treeview.Node(
             key: 'task',
-            label: lastSteps[i]['task'],
-            data: lastSteps[i],
-            children: checkSubs(lastSteps[i]['id'], boxTasks));
+            label: keySteps[i]['task'],
+            data: keySteps[i],
+            children: checkSubs(keySteps[i]['id'], boxTasks));
         treeTasks.add(tasknode);
       }
     } catch (e) {
@@ -146,8 +282,10 @@ class TaskCont extends GetxController {
     List<treeview.Node> littleSubTree = <treeview.Node>[];
     //ялгагдсан boxTaks аас өгөдсөн id аар initialTaskId тай нь тааруулж subtask үгүүг нь
     //тааруулж ялгаж авна
+    bool thisIsFirstTask = true;
     for (int ii = 0; ii < boxTasks.length; ii++) {
       if (boxTasks[ii]['initialTaskId'] == id) {
+        thisIsFirstTask = false;
         treeview.Node taskItem;
         taskItem = treeview.Node(
             key: 'task',
@@ -258,82 +396,6 @@ class TaskCont extends GetxController {
     }
   }
 
-  Future<List<dynamic>> classifyBoxtasks(
-      String boxid, List<dynamic> incomingTasks) async {
-    List<dynamic> boxTasks = [];
-    try {
-      boxTasks =
-          incomingTasks.where((element) => element['boxId'] == boxid).toList();
-      boxTasks = await calculateTimeValue(boxTasks);
-    } catch (e) {
-      Snacks.errorSnack('during classifyBoxtasks $e');
-    }
-    return boxTasks;
-  }
-
-  Future readParentTask(item) async {
-    //get individual task
-    try {
-      //шууд энэ task аа level нэмнэ.
-      item['step']++;
-      setValues(item);
-      updateTask(item['id'], item['imgPath']);
-      //last task байвал parent хайхгүй
-      if (item['initialTaskId'] != "LastTask") {
-        //биш бол ороод
-        Query b = StaticHelpers.databaseReference
-            .child(path)
-            .orderByChild('id')
-            .equalTo(
-              item['initialTaskId'],
-            );
-        DatabaseEvent a = await b.once();
-        if (a.snapshot.exists) {
-          Map<dynamic, dynamic> data =
-              a.snapshot.value as Map<dynamic, dynamic>;
-          var item;
-          item = data.values.toList()[0];
-
-          // readTasksinOneLevel(item['initialTaskId'], item['boxId']);
-          //parent ийг нь аваад явуулчих нь.
-          readParentTask(item);
-        }
-      } else {}
-    } catch (e) {
-      Snacks.errorSnack('During Read initial task : $e');
-    }
-  }
-
-  // Future readTasksinOneLevel(String initId, String boxid) async {
-  //   try {
-  //     Query b = StaticHelpers.databaseReference
-  //         .child(path)
-  //         .orderByChild('initialTaskId')
-  //         .equalTo(
-  //           initId,
-  //         );
-  //     DatabaseEvent a = await b.once();
-  //     if (a.snapshot.exists) {
-  //       Map<dynamic, dynamic> data = a.snapshot.value as Map<dynamic, dynamic>;
-
-  //       List items = data.values.toList();
-  //       items = items.where((element) => element['boxId'] == boxid).toList();
-  //       ;
-  //       for (int o = 0; o < items.length; o++) {
-  //         items[o]['step']++;
-  //         setValues(items[o]);
-  //         updateTask(items[o]['id'], items[o]['imgPath']);
-  //         if (o == items.length - 1 &&
-  //             items[o]['initialTaskId'] != "LastTask") {
-  //           readParentTask(items[o]['initialTaskId']);
-  //         }
-  //       }
-  //     } else {}
-  //   } catch (e) {
-  //     Snacks.errorSnack('During Read initial task : $e');
-  //   }
-  // }
-
   //#region property based funcs
   Map<String, dynamic> taskValues(id) {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -353,22 +415,23 @@ class TaskCont extends GetxController {
       importancy.text = '10';
     }
     if (StaticHelpers.homeMiddleAreaType.value == 'now') {
-      boxId = 'now';
+      parentTask['boxId'] = 'now';
     }
     data['id'] = id;
 
     data['boxId'] = boxId;
     data['imgPath'] = imgPath;
-    data['boxname'] = boxName;
-    data['initialTaskId'] = initialTaskId;
+    data['boxname'] =
+        parentTask?['boxname'] == "" ? boxName : parentTask?['boxname'];
+    data['initialTaskId'] = parentId;
     data['task'] = txtCnt.text;
-    data['description'] = description.text;
+    data['description'] = descriptionTxt.text;
+    data['created_time'] = createdTime.toString().substring(0, 16);
     data['starting_time'] = fullstartingTime;
     data['pinned_time'] = fullpinnedTime;
     data['importancy'] = importancy.text;
     data['spending_time'] = speningHours;
     data['active'] = isActive;
-    data['done_it'] = doneIt;
     data['repeatType'] = type;
     data['weeklyDays'] = weekday;
     data['monthDay'] =
@@ -380,11 +443,10 @@ class TaskCont extends GetxController {
 
   setValues(item) {
     clearValues();
+    parentTask = item;
     boxId = item['boxId'];
-    boxName = item['boxname'];
-    initialTaskId = item['initialTaskId'] ?? '';
+    parentId = item['initialTaskId'];
     txtCnt.text = item['task'];
-    description.text = item['description'];
     startingDate.text = item['starting_time'] ??
         item['starting_time'].toString().substring(0, 10);
     startingTime.text = item['starting_time'] ??
@@ -397,14 +459,12 @@ class TaskCont extends GetxController {
     importancy.text = item['importancy'];
     isActive = item['active'];
     step = item['step'];
-    doneIt = item['done_it'];
   }
 
   setsubValues(item) {
     clearValues();
-    boxId = item['boxId'];
-    boxName = item['boxname'];
-    initialTaskId = item['id'] ?? '';
+    parentTask = item;
+    parentId = item['id'];
     startingDate.text = item['starting_time'] ??
         item['starting_time'].toString().substring(0, 10);
     startingTime.text = item['starting_time'] ??
@@ -417,28 +477,40 @@ class TaskCont extends GetxController {
     importancy.text = item['importancy'];
     isActive = item['active'];
     step = 1;
-    doneIt = item['done_it'];
   }
 
   clearValues() {
-    boxId = '';
-    boxName = 'choose box';
-    initialTaskId = '';
     txtCnt.clear();
-    description.clear();
-
+    createdTime = DateTime.now();
+    parentTask = {};
     startingDate.clear();
     startingTime.clear();
     pinnedDate.clear();
     pinnedTime.clear();
-
     finishedTime = '';
     importancy.text = '1';
     isActive = true;
-    doneIt = 0;
     step = 1;
-
     imgPath = '';
+  }
+
+  clearSubValues() {
+    txtCnt.clear();
+    startingDate.clear();
+    startingTime.clear();
+    pinnedDate.clear();
+    pinnedTime.clear();
+    finishedTime = '';
+    importancy.text = '1';
+    isActive = true;
+    step = 1;
+    imgPath = '';
+  }
+
+  clearParentValues() {
+    parentId = '';
+    boxId = '';
+    boxName = '';
   }
 
   //#endregion property based funcs
@@ -461,6 +533,21 @@ class TaskCont extends GetxController {
     return imageUrl;
   }
 
+  Future readParentTask() async {
+    if (parentTask?['step'] == 1 &&
+        (parentId != 'LastTask' && parentId != '')) {
+      //get individual task
+      try {
+        //шууд энэ task аа level нэмнэ.
+        parentTask['step']++;
+        setValues(parentTask);
+        updateTask(parentTask['id'], parentTask['imgPath']);
+      } catch (e) {
+        Snacks.errorSnack('During Read initial task : $e');
+      }
+    }
+  }
+
   /// delete image from firebase storage
   Future<void> deleteImageFromStorage(String imgUrl) async {
     try {
@@ -481,14 +568,17 @@ class TaskCont extends GetxController {
   //#endregion helpers----------------------------------------------------------
 
   //#region variables-----------------------------------------------------------
-
+  String path = '';
   //#region task properties [14]
+  // String boxName = 'choose box';
+  // String initialTaskId = '';
   String boxId = '';
-  String boxName = 'choose box';
-  String initialTaskId = '';
+  String boxName = '';
+  var parentTask;
+  String parentId = '';
   TextEditingController txtCnt = TextEditingController();
-  TextEditingController description = TextEditingController();
-
+  TextEditingController descriptionTxt = TextEditingController();
+  DateTime createdTime = DateTime.now();
   TextEditingController startingDate = TextEditingController();
   TextEditingController pinnedDate = TextEditingController();
   TextEditingController startingTime = TextEditingController();
@@ -497,24 +587,24 @@ class TaskCont extends GetxController {
 
   TextEditingController importancy = TextEditingController(text: '1');
   bool isActive = true;
-  int doneIt = 0;
   int step = 1;
   //#endregion task properties
 
-  /// Базаас [done_it] талбараар хайсан биелэгдээгүй бүх task
-  List allUnComlitedTasks = [];
+  /// Бүх task
+  List activeTasks = [];
 
   /// step 1 бүхий бүх task ууд
   List alllightTasks = [];
 
-  /// classified step 1 task list
+  /// classified step 1 task value calculated list
   RxList lightTasks = [].obs;
 
-  /// thebox дээр task ын бүрэн зураглалыг харуулах [treeview.Node] агуулсан жагсаалт
+  /// 🔥 thebox дээр task ын бүрэн зураглалыг харуулах [treeview.Node] агуулсан жагсаалт
   RxList<treeview.Node> treeTasks = <treeview.Node>[].obs;
 
   final ideaCont = Get.find<IdeaStreamCont>();
-  String path = '';
+
+  String pathOfAccomplishments = '';
   TimeHelper timeHelper = TimeHelper();
   RxBool loadingVis = false.obs;
 
@@ -537,5 +627,9 @@ class TaskCont extends GetxController {
   String monthDay = '';
 
   RxList boxList = [].obs;
+
+  // active үгүү нь хамаагүй бүх box ууд
+  RxList allBoxList = [].obs;
+
 //#endregion variables----------------------------------------------------------
 }

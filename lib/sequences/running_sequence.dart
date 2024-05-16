@@ -21,7 +21,6 @@ class _PackagedHabitsState extends State<RunningSequence> {
     return GetX<SequenceCont>(
       builder: (littleCont) {
         return ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: littleCont.seqitems.length,
             itemBuilder: (c, i) {

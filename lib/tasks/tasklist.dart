@@ -1,8 +1,8 @@
-import 'package:erek_dash/globals.dart';
 import 'package:erek_dash/tasks/task.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../value/cash_gate.dart';
 import 'task_cont.dart';
 import '../helpers/time.dart';
 
@@ -23,18 +23,14 @@ class _TaskListState extends State<TaskList> {
 
   @override
   Widget build(BuildContext context) {
-    return GetX<TaskCont>(
-      builder: (littleCont) {
-        return ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: littleCont.lightTasks.length,
+    return Obx(() => ListView.builder(
+            itemCount: cont.lightTasks.length,
             shrinkWrap: true,
             itemBuilder: (c, index) {
-              var item = littleCont.lightTasks[index];
-              return InkWell(
+              var item = cont.lightTasks[index];
+              return  item?['boxId'] != "value"? InkWell(
                 onTap: () {
-                  littleCont.setValues(item);
-
+                  cont.setValues(item);
                   Get.to(() => Task(
                         item: item,
                         id: cont.lightTasks[index]['id'],
@@ -42,8 +38,54 @@ class _TaskListState extends State<TaskList> {
                         selectedLabelname: item['boxname'] ?? '',
                       ));
                 },
-                child: item['boxId'] == "value"
-                    ? Container(
+                child: Container(
+                        padding: const EdgeInsets.only(
+                            top: 5, bottom: 5, left: 20, right: 5),
+                        alignment: Alignment.centerLeft,
+                        width: 300,
+                        height: 50,
+                        decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(15))),
+                        margin: const EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 260,
+                              child: Text(
+                                item['task'],
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const Spacer(),
+                            Container(
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                color: Colors.black,
+                              ),
+                              child: Text(
+                                item['timeValue'].toString(),
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 20),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+             
+                    
+                    
+                    
+              ) : InkWell(
+                onTap: () {
+                  cont.setValues(item);
+                  cashGate(context, true, item);
+                },
+                child:   Container(
                         margin: const EdgeInsets.only(top: 10, bottom: 10),
                         padding: const EdgeInsets.only(
                             top: 5, bottom: 5, left: 20, right: 5),
@@ -88,53 +130,14 @@ class _TaskListState extends State<TaskList> {
                                   BorderRadius.all(Radius.circular(5)),
                             ),
                             child: Text(
-                              item['pinned_time'].toString().substring(2, 10),
+                              item['pinned_time'].toString() == ""? "" : item['pinned_time'].toString().substring(2, 10),
                               style: const TextStyle(color: Colors.white),
                             ),
                           )
                         ]),
                       )
-                    : Container(
-                        padding: const EdgeInsets.only(
-                            top: 5, bottom: 5, left: 20, right: 5),
-                        alignment: Alignment.centerLeft,
-                        width: 300,
-                        height: 50,
-                        decoration: const BoxDecoration(
-                            color: Colors.white,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(15))),
-                        margin: const EdgeInsets.all(10),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 260,
-                              child: Text(
-                                item['task'],
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const Spacer(),
-                            Container(
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                                color: Colors.black,
-                              ),
-                              child: Text(
-                                item['timeValue'].toString(),
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 20),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
               );
-            });
-      },
-    );
+            })
+     );
   }
 }

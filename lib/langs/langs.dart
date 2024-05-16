@@ -64,6 +64,7 @@ class _LangsState extends State<Langs> {
                   );
                 });
           }),
+        
           Align(
             alignment: Alignment.bottomCenter,
             child: Row(

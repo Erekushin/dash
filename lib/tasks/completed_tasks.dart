@@ -91,9 +91,7 @@ class _CompletedTasksState extends State<CompletedTasks> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             standartBtn('undo it', () {
-                              littleCont.doneIt = 0;
                               littleCont.finishedTime = "";
-                              
                             }),
                             IconButton(
                                 onPressed: () {

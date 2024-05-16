@@ -41,9 +41,7 @@ Widget addWhiteBtn(IconData icn, Function func) {
 }
 
 Widget erekBtn(String title, bool clrBool, Function func) {
-  return Padding(
-    padding: const EdgeInsets.only(left: 0, right: 0),
-    child: Expanded(
+  return Expanded(
       flex: 1,
       child: InkWell(
         onTap: () => func(),
@@ -66,6 +64,5 @@ Widget erekBtn(String title, bool clrBool, Function func) {
           ),
         ),
       ),
-    ),
-  );
+    );
 }

@@ -60,11 +60,11 @@ class NoteEdit extends StatelessWidget {
                               margin: const EdgeInsets.all(5),
                               child: InkWell(
                                 onTap: () {},
-                                child: Center(
+                                child: const Center(
                                   child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
-                                      children: const [
+                                      children: [
                                         Text(
                                           'choose',
                                           style: TextStyle(color: Colors.white),
