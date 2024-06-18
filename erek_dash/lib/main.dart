@@ -17,7 +17,16 @@ import 'package:firebase_core/firebase_core.dart';
 void main() async {
   // firebase version //last
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+      options: const FirebaseOptions(
+    apiKey: 'AIzaSyDhqXuEF2ExqRx_g4p2rjhP6JpCqp6bsno',
+    appId: '1:518470648235:web:0aa6818825019db0ead2ee',
+    messagingSenderId: '518470648235',
+    databaseURL:
+        "https://erek-dashboard-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: 'erek-dashboard',
+    storageBucket: "erek-dashboard.appspot.com",
+  ));
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
