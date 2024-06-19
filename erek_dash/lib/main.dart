@@ -15,7 +15,7 @@ import 'home.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
-  // firebase version //last
+  // firebase version  2024-06-19
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
       options: const FirebaseOptions(
