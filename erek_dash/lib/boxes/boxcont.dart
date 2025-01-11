@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:erek_dash/globals.dart';
-import 'package:erek_dash/tasks/task_cont.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';

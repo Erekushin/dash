@@ -268,7 +268,7 @@ Object habitGroupGate(
                             color: Colors.white,
                             shadowColor: Colors.transparent,
                             child: Padding(
-                              padding: EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(10),
                               child: Row(
                                 children: [
                                   taskProperty(

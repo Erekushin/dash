@@ -225,7 +225,7 @@ class _TaskGateState extends State<TaskGate> {
 
 // ignore: must_be_immutable
 class TaskGateNow extends StatefulWidget {
-  TaskGateNow({super.key});
+  const TaskGateNow({super.key});
   @override
   State<TaskGateNow> createState() => _TaskGateNowState();
 }

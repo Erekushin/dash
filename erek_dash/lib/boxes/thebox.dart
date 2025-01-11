@@ -1,9 +1,7 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../globals.dart';
 import 'boxcont.dart';
 
 // ignore: must_be_immutable

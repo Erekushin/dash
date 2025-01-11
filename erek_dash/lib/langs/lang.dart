@@ -408,7 +408,7 @@ Object wordgate(BuildContext conte, String word, String translation,
                               child: Column(
                                 children: [
                                   Text(word),
-                                  Divider(),
+                                  const Divider(),
                                   Text(translation)
                                 ],
                               ),

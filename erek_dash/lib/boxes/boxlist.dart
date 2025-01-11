@@ -134,7 +134,7 @@ class _BoxListState extends State<BoxList> {
                           SizedBox(
                             height: 80,
                             child: Card(
-                              color: Color.fromARGB(255, 255, 255, 255),
+                              color: const Color.fromARGB(255, 255, 255, 255),
                               shadowColor: Colors.transparent,
                               child: Padding(
                                 padding: const EdgeInsets.all(10),

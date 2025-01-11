@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 class LangTest extends StatefulWidget {
-  LangTest({required this.words});
+  LangTest({super.key, required this.words});
   List words;
   @override
-  _LangTestState createState() => new _LangTestState();
+  _LangTestState createState() => _LangTestState();
 }
 
 class _LangTestState extends State<LangTest> with TickerProviderStateMixin {
@@ -16,6 +16,7 @@ class _LangTestState extends State<LangTest> with TickerProviderStateMixin {
   List<AnimationController> animeConts = <AnimationController>[];
   final List<Animation> _animes = <Animation>[];
   final List<AnimationStatus> _statuses = <AnimationStatus>[];
+  @override
   void initState() {
     super.initState();
     for (int i = 0; i < widget.words.length; i++) {
@@ -100,7 +101,7 @@ class _LangTestState extends State<LangTest> with TickerProviderStateMixin {
                                         ]),
                                     child: Text(
                                       widget.words[i]['word'],
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           color: Colors.white, fontSize: 40),
                                     ),
                                   )
